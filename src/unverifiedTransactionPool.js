@@ -8,6 +8,7 @@ class UnverifiedTransactionPool {
 
   pushTransaction(transaction) {
     if (transaction === undefined || transaction === null) {
+      console.error('Transaction can not be null or undefined!');
       return false;
     }
 
@@ -24,12 +25,16 @@ class UnverifiedTransactionPool {
     this.transArray.sort(() => Math.random() - 0.5);
     const transaction = this.transArray.splice(index,1)[0];
 
-    console.log('Get new length: ' + this.transArray.length);
+    console.log('New size of pool: ' + this.transArray.length);
     return transaction;
   }
 
   getCurrentPoolSize() {
       return this.transArray.length;
+  }
+
+  getPool() {
+    return this.transArray;
   }
 }
 

@@ -13,6 +13,8 @@ const series = require('async/series')
 const UnverifiedTransactionPool = require('./unverifiedTransactionPool')
 const Blockchain = require('./blockchain')
 const Transaction = require('./transaction')
+const Input = require('./input')
+const Output = require('./output')
 
 let chain = new Blockchain();
 
@@ -67,13 +69,22 @@ parallel([
   const node2 = nodes[1]
 
   const pool = new UnverifiedTransactionPool();
-  pool.pushTransaction(new Transaction());
-  pool.pushTransaction(new Transaction());
-  pool.pushTransaction(new Transaction());
+  var input = [];
+  input.push(new Input('123', 0));
+  var output = [];
+  output.push(new Output('234', 4));
+  pool.pushTransaction(new Transaction(input, output, null));
+  pool.pushTransaction(new Transaction(input, output, null));
+  pool.pushTransaction(new Transaction(input, output, null));
+  console.log(JSON.stringify(pool.getPool(), null, 4));
   pool.getRandomTransaction();
-  pool.getRandomTransaction();
-  pool.pushTransaction(new Transaction());
+  input.push(new Input('234', 5));
+  output.push(new Output('234', 4));
+  output.push(new Output('234', 4));
+  output.push(new Output('234', 4));
+  pool.pushTransaction(new Transaction(input, output, null));
 
+  console.log(JSON.stringify(pool.getPool(), null, 4));
   // TODO: Broadcast the new Transaction!
 
 
