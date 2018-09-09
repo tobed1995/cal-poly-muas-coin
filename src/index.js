@@ -10,8 +10,9 @@ const defaultsDeep = require('@nodeutils/defaults-deep')
 const waterfall = require('async/waterfall')
 const parallel = require('async/parallel')
 const series = require('async/series')
-
+const UnverifiedTransactionPool = require('./unverifiedTransactionPool')
 const Blockchain = require('./blockchain')
+const Transaction = require('./transaction')
 
 let chain = new Blockchain();
 
@@ -64,6 +65,17 @@ parallel([
 
   const node1 = nodes[0]
   const node2 = nodes[1]
+
+  const pool = new UnverifiedTransactionPool();
+  pool.pushTransaction(new Transaction());
+  pool.pushTransaction(new Transaction());
+  pool.pushTransaction(new Transaction());
+  pool.getRandomTransaction();
+  pool.getRandomTransaction();
+  pool.pushTransaction(new Transaction());
+
+  // TODO: Broadcast the new Transaction!
+
 
   series([
     (cb) => node1.once('peer:discovery', (peer) => node1.dial(peer, cb)),
