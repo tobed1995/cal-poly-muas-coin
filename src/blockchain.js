@@ -42,7 +42,6 @@ class Blockchain {
     this.chain.forEach(function(item) {
       item.getTransactions().forEach(function(transaction) {
         if (transaction.getTransactionHash() === transactionHash) {
-          console.log('Found a collision!');
           return transaction;
         }
       });
@@ -50,38 +49,41 @@ class Blockchain {
     return null;
   }
 
+// TODO: double spending of output objects
   verifyTransaction(transaction) {
     console.log('Start validation of transaction ' + transaction.getTransactionHash());
 
     // Check if transaction with same hash already exists in blockchain (collision)
-    if (this.getTransactionByHash(transaction.getTransactionHash()) === null) {
+    if (this.getTransactionByHash(transaction.getTransactionHash()) !== null) {
+      console.log('Found collision');
       return false;
    }
 
     // Verify transaction input and output: input === output
     var transOutputSum = 0; // sum of output coins of this transaction.
     var transInputSum = 0; // sum of input coins of this transaction.
-    transaction.getOutput().forEach(function(item){
+    transaction.getOutput().forEach(function(item) {
       transOutputSum += item.getAmount();
     });
-    transaction.getInput().forEach(function(item){
-      // Load reference transaction
-      var referencedOutputTransaction = getTransactionByHash(item.transaction_hash);
-      if (referencedOutputTransaction === null) {
+
+    for (var index = 0; index < transaction.getInput().length; index++) {
+      var item = transaction.getInput()[index];
+      console.log(item);
+      var referencedInputTransaction = this.getTransactionByHash(item.transaction_hash);
+      console.log(this.getTransactionByHash(item.transaction_hash));
+      console.log(referencedInputTransaction);
+
+      if (referencedInputTransaction === null) {
         // This case happens, if the transaction in input object is not in chain yet.
         return null;
       }
-      transInputSum += referencedOutputTransaction.getOutput()[item.output_index].amount;
-    });
-
-    if (transOutputSum !== transInputSum) {
-      return false;
+      transInputSum += referencedInputTransaction.getOutput()[item.output_index].amount;
     }
 
-    // TODO: Add signature check!
+    console.log('Inputsum: ' + transInputSum);
+    console.log('Outputsum: ' + transOutputSum);
 
-
-    return true;
+    return transOutputSum === transInputSum;
   }
 
 }
