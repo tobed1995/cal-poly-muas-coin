@@ -18,6 +18,8 @@ const Transaction = require('./transaction')
 const Input = require('./input')
 const Output = require('./output')
 
+const MUASNode = require('./muasNode')
+
 let chain = new Blockchain();
 
 const pool = new UnverifiedTransactionPool();

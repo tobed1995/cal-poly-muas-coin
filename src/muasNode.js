@@ -15,7 +15,7 @@ const DHT = require('libp2p-kad-dht')
 const defaultsDeep = require('@nodeutils/defaults-deep')
 const Protector = require('libp2p-pnet')
 
-class muasNode extends libp2p {
+class MUASNode extends libp2p {
   constructor (_options) {
     const defaults = {
       // The libp2p modules for this libp2p bundle
@@ -73,6 +73,9 @@ class muasNode extends libp2p {
     // overload any defaults of your bundle using https://github.com/nodeutils/defaults-deep
     super(defaultsDeep(_options, defaults))
   }
+
 }
+
+module.exports = MUASNode;
 
 // Now all the nodes you create, will have TCP, WebSockets, SPDY, MPLEX, SECIO and MulticastDNS support.
