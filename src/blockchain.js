@@ -45,9 +45,9 @@ class Blockchain {
     console.log('Start validation of transaction ' + transaction.getTransactionHash());
 
     // Check if transaction with same hash already exists (collision)
-  //  if (getTransactionByHash(transaction.getTransactionHash()) === null) {
-  //    return false;
-//    }
+    if (getTransactionByHash(transaction.getTransactionHash()) === null) {
+      return false;
+   }
 
     // Verify transaction input and output: input === output
     var transOutputSum = 0;
