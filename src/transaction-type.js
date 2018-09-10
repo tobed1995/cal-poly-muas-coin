@@ -3,3 +3,5 @@ const TransactionType = {
   MERGE: 'merge',
   JOIN: 'join'
 }
+
+module.exports = TransactionType

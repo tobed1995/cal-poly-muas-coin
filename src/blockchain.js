@@ -3,15 +3,19 @@ const Block  = require('./block');
 class Blockchain {
 
   constructor() {
-    this.chain = [new Block('0','0')];
+    this.chain = [];
   }
 
   latestBlock() {
-    return this.chain[this.chain.length - 1];
+    if (this.chain.length > 0) {
+      return this.chain[this.chain.length - 1];
+    } else {
+      return null;
+    }
   }
 
   addBlock(newBlock) {
-    newBlock.previousHash = this.latestBlock().hash;
+    newBlock.previousHash = this.latestBlock();
     newBlock.hash = newBlock.calculateHash();
     this.chain.push(newBlock);
   }
@@ -34,17 +38,22 @@ class Blockchain {
   }
 
   getTransactionByHash(transactionHash) {
-    var transaction = null;
-  //  this.chain.forEach(function(item) {
-
-  //  });
-    return transaction;
+    var transactionResult = null;
+    this.chain.forEach(function(item) {
+      item.getTransactions().forEach(function(transaction) {
+        if (transaction.getTransactionHash() === transactionHash) {
+          console.log('Found a collision!');
+          return transaction;
+        }
+      });
+    });
+    return null;
   }
 
   verifyTransaction(transaction) {
     console.log('Start validation of transaction ' + transaction.getTransactionHash());
 
-    // Check if transaction with same hash already exists (collision)
+    // Check if transaction with same hash already exists in blockchain (collision)
     if (this.getTransactionByHash(transaction.getTransactionHash()) === null) {
       return false;
    }
@@ -55,18 +64,9 @@ class Blockchain {
       transOutputSum += item.getAmount();
     });
 
-
-
     return false;
   }
 
 }
-
-let jsChain = new Blockchain();
-jsChain.addBlock(new Block({amount: 5},{amount:5},'asda123',0,true));
-jsChain.addBlock(new Block({amount: 15},{amount:15},'asda123',20,true));
-
-console.log(JSON.stringify(jsChain, null, 4));
-console.log("Is blockchain valid? " + jsChain.checkValid());
 
 module.exports = Blockchain;
