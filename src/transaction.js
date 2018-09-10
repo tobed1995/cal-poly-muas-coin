@@ -2,7 +2,7 @@
 const SHA256 = require('crypto-js/sha256')
 
 class Transaction {
-  constructor(inputParam, outputParam, signaturesParam) {
+  constructor(inputParam, outputParam, signaturesParam, transactionType) {
     if (Array.isArray(inputParam)) {
       this.input = inputParam;
     } else {
@@ -23,7 +23,9 @@ class Transaction {
       this.signatures = [];
       this.signatures.push(signaturesParam);
     }
-    this.transactionHash = SHA256(this.input + this.output + this.signatures).toString();
+    this.transactionType = transactionType;
+
+    this.transactionHash = SHA256(this.input + this.output + this.signatures + this.transactionType).toString();
   }
 
   getInput() {
@@ -37,6 +39,9 @@ class Transaction {
   }
   getTransactionHash() {
     return this.transactionHash;
+  }
+  getTransactionType() {
+    return this.transactionType;
   }
 }
 
