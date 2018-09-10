@@ -24,29 +24,12 @@ const MUASNode = require('./muasNode')
 
 let chain = new Blockchain();
 
-const pool = new UnverifiedTransactionPool();
 
-var input = [];
-//
-input.push(new Input('0xblub', 2));
+// Test verification of transactions in chain.
 
-var output = [];
-output.push(new Output('234', 4));
-pool.pushTransaction(new Transaction(input, output, null));
-pool.pushTransaction(new Transaction(input, output, null));
-pool.pushTransaction(new Transaction(input, output, null));
-console.log(JSON.stringify(pool.getPool(), null, 4));
-pool.getRandomTransaction();
-input.push(new Input('234', 5));
-output.push(new Output('234', 4));
-output.push(new Output('234', 4));
-output.push(new Output('234', 4));
-var trans = new Transaction(input, output, null);
-chain.verifyTransaction(trans);
-pool.pushTransaction(trans);
 
-console.log(JSON.stringify(pool.getPool(), null, 4));
-// TODO: Broadcast the new Transaction!
+
+
 
 /** TODO: Improve coding, now it will broadcast but the main functionalities are still missing!!!! */
 parallel([
@@ -88,11 +71,11 @@ parallel([
             if (err) {
               throw err
             }
-        
+
             console.log('nodeA dialed to nodeB on protocol: /echo/1.0.0');
             console.log("Node: " + node.id);
             counter++;
-        
+
             pull(
               pull.values(['hey']),
               conn,

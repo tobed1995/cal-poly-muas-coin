@@ -59,12 +59,29 @@ class Blockchain {
    }
 
     // Verify transaction input and output: input === output
-    var transOutputSum = 0;
+    var transOutputSum = 0; // sum of output coins of this transaction.
+    var transInputSum = 0; // sum of input coins of this transaction.
     transaction.getOutput().forEach(function(item){
       transOutputSum += item.getAmount();
     });
+    transaction.getInput().forEach(function(item){
+      // Load reference transaction
+      var referencedOutputTransaction = getTransactionByHash(item.transaction_hash);
+      if (referencedOutputTransaction === null) {
+        // This case happens, if the transaction in input object is not in chain yet.
+        return null;
+      }
+      transInputSum += referencedOutputTransaction.getOutput()[item.output_index].amount;
+    });
 
-    return false;
+    if (transOutputSum !== transInputSum) {
+      return false;
+    }
+
+    // TODO: Add signature check!
+
+
+    return true;
   }
 
 }
