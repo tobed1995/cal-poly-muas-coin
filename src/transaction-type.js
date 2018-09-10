@@ -1,4 +1,4 @@
-export const TransactionType = {
+const TransactionType = {
   TRANSFER: 'transfer',
   MERGE: 'merge',
   JOIN: 'join'
