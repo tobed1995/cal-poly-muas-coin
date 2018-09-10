@@ -28,6 +28,10 @@ class Transaction {
     this.transactionHash = SHA256(this.input + this.output + this.signatures + this.transactionType).toString();
   }
 
+  checkSign(transaction) {
+    return null
+  }
+
   getInput() {
     return this.input;
   }
