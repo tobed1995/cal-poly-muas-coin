@@ -33,6 +33,11 @@ class Blockchain {
     return true;
   }
 
+  verifyTransaction(transaction) {
+    console.log('Start validation of transaction ' + transaction.getTransactionHash());
+    return false;
+  }
+
 }
 
 let jsChain = new Blockchain();

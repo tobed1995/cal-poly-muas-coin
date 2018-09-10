@@ -87,7 +87,6 @@ parallel([
   console.log(JSON.stringify(pool.getPool(), null, 4));
   // TODO: Broadcast the new Transaction!
 
-
   series([
     (cb) => node1.once('peer:discovery', (peer) => node1.dial(peer, cb)),
     (cb) => setTimeout(cb, 500)
