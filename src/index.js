@@ -42,7 +42,7 @@ console.log(JSON.stringify(chain, null, 4));
 // Test verification of transactions in chain.
 let input1 = new Input(gentrans.transactionHash, 0);
 let output11 = new Output('46565582949553546526595695326592326596', 10);
-let output12 = new Output('0000000000000000000000000000000000000000000000000000000000000000', 25);
+let output12 = new Output('0000000000000000000000000000000000000000000000000000000000000000', 15);
 let trans1 = new Transaction(input1, [output11, output12], null, TransactionType.TRANSFER);
 console.log(JSON.stringify(trans1, null, 4));
 let result = chain.verifyTransaction(trans1);

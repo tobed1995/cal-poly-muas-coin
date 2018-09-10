@@ -38,14 +38,18 @@ class Blockchain {
   }
 
   getTransactionByHash(transactionHash) {
-    var transactionResult = null;
-    this.chain.forEach(function(item) {
-      item.getTransactions().forEach(function(transaction) {
-        if (transaction.getTransactionHash() === transactionHash) {
-          return transaction;
+    for (var index = 0; index < this.chain.length; index++) {
+      var singleBlock = this.chain[index];
+
+      for (var index2 = 0; index2 < singleBlock.transaction.length; index2++) {
+        var singleTrans = singleBlock.transaction[index2];
+
+        if (singleTrans.getTransactionHash() === transactionHash) {
+          return singleTrans;
         }
-      });
-    });
+      };
+    };
+
     return null;
   }
 
@@ -67,11 +71,8 @@ class Blockchain {
     });
 
     for (var index = 0; index < transaction.getInput().length; index++) {
-      var item = transaction.getInput()[index];
-      console.log(item);
-      var referencedInputTransaction = this.getTransactionByHash(item.transaction_hash);
-      console.log(this.getTransactionByHash(item.transaction_hash));
-      console.log(referencedInputTransaction);
+      let item = transaction.getInput()[index];
+      let referencedInputTransaction = this.getTransactionByHash(item.transaction_hash);
 
       if (referencedInputTransaction === null) {
         // This case happens, if the transaction in input object is not in chain yet.
