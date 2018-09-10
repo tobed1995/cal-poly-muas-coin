@@ -82,7 +82,9 @@ parallel([
   output.push(new Output('234', 4));
   output.push(new Output('234', 4));
   output.push(new Output('234', 4));
-  pool.pushTransaction(new Transaction(input, output, null));
+  var trans = new Transaction(input, output, null);
+  chain.verifyTransaction(trans);
+  pool.pushTransaction(trans);
 
   console.log(JSON.stringify(pool.getPool(), null, 4));
   // TODO: Broadcast the new Transaction!

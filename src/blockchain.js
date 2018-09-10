@@ -33,8 +33,30 @@ class Blockchain {
     return true;
   }
 
+  getTransactionByHash(transactionHash) {
+    var transaction = null;
+    this.chain.forEach(function(item) {
+        
+    });
+    return transaction;
+  }
+
   verifyTransaction(transaction) {
     console.log('Start validation of transaction ' + transaction.getTransactionHash());
+
+    // Check if transaction with same hash already exists (collision)
+    if (getTransactionByHash(transaction.getTransactionHash()) === null) {
+      return false;
+    }
+
+    // Verify transaction input and output: input === output
+    var transOutputSum = 0;
+    transaction.getOutput().forEach(function(item){
+      transOutputSum += item.getAmount();
+    });
+
+
+
     return false;
   }
 
