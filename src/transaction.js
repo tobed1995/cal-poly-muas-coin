@@ -9,12 +9,14 @@ class Transaction {
       this.input = [];
       this.input.push(inputParam);
     }
+
     if (Array.isArray(outputParam)) {
       this.output = outputParam;
     } else {
       this.output = [];
       this.output.push(outputParam);
     }
+
     if (Array.isArray(signaturesParam)) {
       this.signatures = signaturesParam;
     } else {

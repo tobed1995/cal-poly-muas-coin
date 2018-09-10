@@ -69,8 +69,12 @@ parallel([
   const node2 = nodes[1]
 
   const pool = new UnverifiedTransactionPool();
+
   var input = [];
-  input.push(new Input('123', 0));
+  //
+  input.push(new Input('0xblub', 2));
+
+
   var output = [];
   output.push(new Output('234', 4));
   pool.pushTransaction(new Transaction(input, output, null));

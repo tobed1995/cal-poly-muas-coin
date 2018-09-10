@@ -1,9 +1,9 @@
-const {Block, Input, Output}  = require('./block');
+const Block  = require('./block');
 
 class Blockchain {
 
   constructor() {
-    this.chain = [new Block('0',{},{},{},'0','0','0')];
+    this.chain = [new Block('0','0')];
   }
 
   latestBlock() {
@@ -35,9 +35,9 @@ class Blockchain {
 
   getTransactionByHash(transactionHash) {
     var transaction = null;
-    this.chain.forEach(function(item) {
-        
-    });
+  //  this.chain.forEach(function(item) {
+
+  //  });
     return transaction;
   }
 
@@ -45,9 +45,9 @@ class Blockchain {
     console.log('Start validation of transaction ' + transaction.getTransactionHash());
 
     // Check if transaction with same hash already exists (collision)
-    if (getTransactionByHash(transaction.getTransactionHash()) === null) {
-      return false;
-    }
+  //  if (getTransactionByHash(transaction.getTransactionHash()) === null) {
+  //    return false;
+//    }
 
     // Verify transaction input and output: input === output
     var transOutputSum = 0;
