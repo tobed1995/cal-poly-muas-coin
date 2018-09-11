@@ -37,6 +37,17 @@ class MUASNode extends libp2p {
 
     super(defaultsDeep(_options, defaults))
   }
+
+  /** Testing methods for checking if the communication between the nodes works - BEGIN */
+  testMethod(testArgument) {
+    console.log(testArgument);
+  }
+
+  testMethodReturn() {
+    return "Test in testMethodReturn()";
+  }
+
+  /** Testing methods for checking if the communication between the nodes works - END */
 }
 
 var createNode = function(callback) {
