@@ -25,11 +25,30 @@ class Transaction {
     }
     this.transactionType = transactionType;
 
-    this.transactionHash = SHA256(this.input + this.output + this.signatures + this.transactionType).toString();
+    this.transactionHash = SHA256(this.transacinput + this.output + this.signatures + this.transactionType).toString();
   }
 
-  checkSign(transaction) {
-    return null
+  /** Adds Signature to transaction
+
+  **/
+  sign(privateKey) {
+
+  var md = forge.md.sha256.create();
+  md.update(this.toString(), 'utf8');                    // this should be string
+  console.log(md.digest().toHex());
+
+  var signature = privateKey.sign(md);
+  this.signatures.push(signature);            // signatures should be always a array
+
+  }
+
+  // Verifies Signature
+
+  checkSign() {
+
+
+// add for each
+    return publicKey.verify(md.digest().bytes(), signature);
   }
 
   getInput() {
