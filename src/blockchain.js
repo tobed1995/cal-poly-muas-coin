@@ -5,7 +5,7 @@ class Blockchain {
 
   constructor() {
     this.chain = [];
-    var self = this;
+/* var self = this;
     fs.readFileSync('chain.json', 'utf8', function (err, data) {
       if (err) {
         console.error('Could not found chain data. Create new file.');
@@ -14,7 +14,7 @@ class Blockchain {
         console.log('Load chaindata: ' + data);
         self.chain = JSON.parse(data);
       }
-    });
+    }); */
   }
 
   latestBlock() {

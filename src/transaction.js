@@ -1,5 +1,6 @@
 
 const SHA256 = require('crypto-js/sha256')
+const forge = require('node-forge');
 
 class Transaction {
   constructor(inputParam, outputParam) {
@@ -21,10 +22,18 @@ class Transaction {
     this.transactionHash = '';
   }
 
+  createTransactionHash() {
+    var md = forge.md.sha256.create();
+    md.update(this.data + this.signatures);
+    //console.log(md.digest().toHex());
+    this.transactionHash = md.digest().toHex();
+  }
+
+  // Signs the data part of the Transaction
   sign(privateKey) {
     var md = forge.md.sha256.create();
     md.update(this.data, 'utf8');
-    console.log(md.digest().toHex());
+    //console.log(md.digest().toHex());
 
     var signature = privateKey.sign(md);
     this.signatures.push(signature);

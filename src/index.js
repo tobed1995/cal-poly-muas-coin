@@ -12,18 +12,57 @@ const parallel = require('async/parallel')
 const series = require('async/series')
 const pull = require('pull-stream')
 
-
+const forge = require('node-forge');
 const UnverifiedTransactionPool = require('./unverifiedTransactionPool')
 const Blockchain = require('./blockchain')
 const Transaction = require('./transaction')
 const Input = require('./input')
 const Output = require('./output')
-const TransactionType = require('./transaction-type')
 const Block = require('./block')
 
 const MUASNode = require('./muasNode')
 
 let chain = new Blockchain();
+
+// Global Keypair of node
+var keyPair = null;
+
+
+var input = [];
+input.push(new Input('0xblub', 2));
+
+var output = [];
+output.push(new Output('234', 4));
+var trans = new Transaction(input, output);
+
+var rsa = forge.pki.rsa;
+console.log("Start");
+
+// Blocking
+//var keyPair = rsa.generateKeyPair({bits: 1024, e: 0x10001});
+rsa.generateKeyPair({bits: 1024, workers: 2}, function(err, keypair) {
+  // keypair.privateKey, keypair.publicKey
+  keyPair = keypair;
+
+  // Sign Transaction
+  trans.sign(keyPair.privateKey);
+  console.log("Transaction");
+  console.log(trans)
+
+  var md = forge.md.sha256.create();
+  md.update(trans.data, 'utf8');
+  console.log("Jetzt verify");
+  var verified = keyPair.publicKey.verify(md.digest().bytes(), trans.getSignatures()[0]);
+  console.log("verified? ");
+  console.log(verified);
+
+  console.log("hash Transaction");
+  trans.createTransactionHash();
+  console.log(trans);
+
+});
+
+console.log("Start2");
 
 
 
@@ -87,14 +126,14 @@ parallel([
   nodes.forEach(node => {
     /**
      * A node cannot dial itself
-     * 
+     *
      * An own protocol has been inventend for the purposes of "muas-coin
      */
 
     if (node !== node1) {
       /**
        * First the nodes will subscribe to the "network"
-       * 
+       *
        * After that the node that wants to send something to the
        * network will dial the protocol and connects to the nodes
        */
