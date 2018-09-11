@@ -1,9 +1,20 @@
-const Block  = require('./block');
+const Block  = require('./block')
+const fs = require('fs')
 
 class Blockchain {
 
   constructor() {
     this.chain = [];
+    var self = this;
+    fs.readFileSync('chain.json', 'utf8', function (err, data) {
+      if (err) {
+        console.error('Could not found chain data. Create new file.');
+        fs.writeFileSync('chain.json', '')
+      } else {
+        console.log('Load chaindata: ' + data);
+        self.chain = JSON.parse(data);
+      }
+    });
   }
 
   latestBlock() {
@@ -17,6 +28,7 @@ class Blockchain {
   addBlock(newBlock) {
     newBlock.hash = newBlock.calculateHash();
     this.chain.push(newBlock);
+    fs.writeFileSync("chain.json", JSON.stringify(this.chain), {encoding:'utf8',flag:'w'});
   }
 
   checkValid() {
