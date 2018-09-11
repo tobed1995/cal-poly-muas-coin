@@ -15,7 +15,6 @@ class Blockchain {
   }
 
   addBlock(newBlock) {
-    newBlock.previousHash = this.latestBlock();
     newBlock.hash = newBlock.calculateHash();
     this.chain.push(newBlock);
   }
@@ -47,13 +46,35 @@ class Blockchain {
         if (singleTrans.getTransactionHash() === transactionHash) {
           return singleTrans;
         }
-      };
-    };
-
+      }
+    }
     return null;
   }
 
-// TODO: double spending of output objects
+  getNumberOfReferencesForOutput(transaction, outputIndex) {
+      var transHash = transaction.getTransactionHash();
+      var amount = 0;
+
+      for (var index = this.chain.length - 1; index >= 0; index--) {
+        var singleBlock = this.chain[index];
+
+        for (var index2 = 0; index2 < singleBlock.transaction.length; index2++) {
+          var singleTrans = singleBlock.transaction[index2];
+
+          for (var index3 = 0; index3 < singleTrans.getInput().length; index3++) {
+            var singleInput = singleTrans.getInput();
+
+            if (singleInput.transaction_hash === transHash
+              && singleInput.output_index === outputIndex) {
+              amount++;
+            }
+          }
+        }
+      }
+
+      return amount;
+  }
+
   verifyTransaction(transaction) {
     console.log('Start validation of transaction ' + transaction.getTransactionHash());
 
@@ -61,15 +82,15 @@ class Blockchain {
     if (this.getTransactionByHash(transaction.getTransactionHash()) !== null) {
       console.log('Found collision');
       return false;
-   }
+    }
 
     // Verify transaction input and output: input === output
+    // Plus verify that input object is the newest.
     var transOutputSum = 0; // sum of output coins of this transaction.
     var transInputSum = 0; // sum of input coins of this transaction.
     transaction.getOutput().forEach(function(item) {
       transOutputSum += item.getAmount();
     });
-
     for (var index = 0; index < transaction.getInput().length; index++) {
       let item = transaction.getInput()[index];
       let referencedInputTransaction = this.getTransactionByHash(item.transaction_hash);
@@ -79,10 +100,14 @@ class Blockchain {
         return null;
       }
       transInputSum += referencedInputTransaction.getOutput()[item.output_index].amount;
-    }
 
-    console.log('Inputsum: ' + transInputSum);
-    console.log('Outputsum: ' + transOutputSum);
+      // Verify used output not used yet(getNumberOfReferencesForOutput must be zero):
+      var number = this.getNumberOfReferencesForOutput(referencedInputTransaction, item.output_index);
+      console.log('Number of output usages: ' + number);
+      if (number > 0) {
+        return false;
+      }
+    }
 
     return transOutputSum === transInputSum;
   }

@@ -33,11 +33,7 @@ genblock.setNonce(123456789);
 genblock.setBlockHash(genblock.calculateHash());
 chain.chain.push(genblock);
 
-
-
 console.log(JSON.stringify(chain, null, 4));
-
-
 
 // Test verification of transactions in chain.
 let input1 = new Input(gentrans.transactionHash, 0);
@@ -49,11 +45,37 @@ let result = chain.verifyTransaction(trans1);
 
 if (result) {
   console.log('Transaction valid');
+  var newBlock = new Block(trans1, chain.latestBlock());
+  chain.addBlock(newBlock);
+} else {
+  console.log('Transaction invalid');
+}
+// -----------------------------------------------------
+result = chain.verifyTransaction(trans1);
+console.log(JSON.stringify(chain, null, 4));
+if (result) {
+  console.log('Transaction valid');
+  var newBlock2 = new Block(trans1, chain.latestBlock());
+  chain.addBlock(newBlock2);
+} else {
+  console.log('Transaction invalid');
+}
+// --------------------------------------------------------
+let input2 = new Input(trans1.transactionHash, 0);
+let output21 = new Output('0000000000000000000000000000000000000000000000000000000000000000', 10);
+let trans2 = new Transaction(input2, output21, null, TransactionType.TRANSFER);
+console.log(JSON.stringify(trans2, null, 4));
+let result3 = chain.verifyTransaction(trans2);
+
+if (result3) {
+  console.log('Transaction valid');
+  var newBlock2 = new Block(trans2, chain.latestBlock());
+  chain.addBlock(newBlock2);
 } else {
   console.log('Transaction invalid');
 }
 
-
+console.log(JSON.stringify(chain, null, 4));
 
 /** TODO: Improve coding, now it will broadcast but the main functionalities are still missing!!!! */
 parallel([
