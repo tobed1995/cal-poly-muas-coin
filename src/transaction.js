@@ -53,9 +53,6 @@ class Transaction {
     return this.signatures;
   }
   getTransactionHash() {
-    if (this.transactionHash === '') {
-      this.transactionHash = SHA256(this.data.input + this.data.output + this.signatures).toString();
-    }
     return this.transactionHash;
   }
 }

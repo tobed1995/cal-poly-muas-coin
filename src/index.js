@@ -39,33 +39,32 @@ var rsa = forge.pki.rsa;
 console.log("Start");
 
 // Blocking
-//var keyPair = rsa.generateKeyPair({bits: 1024, e: 0x10001});
-rsa.generateKeyPair({bits: 1024, workers: 2}, function(err, keypair) {
-  // keypair.privateKey, keypair.publicKey
-  keyPair = keypair;
+keyPair = rsa.generateKeyPair({bits: 1024, e: 0x10001});
 
   // Sign Transaction
   trans.sign(keyPair.privateKey);
   console.log("Transaction");
   console.log(trans)
 
+  console.log("Jetzt verify");
+  // Verify Sign
   var md = forge.md.sha256.create();
   md.update(trans.data, 'utf8');
-  console.log("Jetzt verify");
   var verified = keyPair.publicKey.verify(md.digest().bytes(), trans.getSignatures()[0]);
   console.log("verified? ");
   console.log(verified);
 
+  // Hash complete Transaction after it is completed
   console.log("hash Transaction");
   trans.createTransactionHash();
   console.log(trans);
 
-});
 
-console.log("Start2");
+//How to Verify a Transaction:
 
-
-
+  // Compare Hash of Transaction with own creation
+  var md = forge.md.sha256.create();
+  console.log(trans.getTransactionHash() === md.update(trans.data + trans.signatures).digest().toHex());
 
 
 
