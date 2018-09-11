@@ -31,6 +31,7 @@ class Blockchain {
     fs.writeFileSync("chain.json", JSON.stringify(this.chain), {encoding:'utf8',flag:'w'});
   }
 
+// Done by Jonas not in use
   checkValid() {
     for (let i = 1; i < this.chain.length; i++) {
       const currentBlock = this.chain[i];
@@ -48,6 +49,7 @@ class Blockchain {
     return true;
   }
 
+  // Helper Funktion to get a Single Transaction out of Blockchain with Hashpointer
   getTransactionByHash(transactionHash) {
     for (var index = 0; index < this.chain.length; index++) {
       var singleBlock = this.chain[index];
@@ -87,6 +89,13 @@ class Blockchain {
       return amount;
   }
 
+
+/* Verifies Transaction like in Task 2
+ - The signature verifies the transaction
+ - Each input is only used once on the chain
+ - The amount of coins in the output is satisfied by the number of coins in the input
+ - The total number of coins in the input equals the number of coins in the output
+*/
   verifyTransaction(transaction) {
     console.log('Start validation of transaction ' + transaction.getTransactionHash());
 
