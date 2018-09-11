@@ -24,6 +24,24 @@ const MUASNode = require('./muasNode')
 
 let chain = new Blockchain();
 
+
+var input = [];
+input.push(new Input('0xblub', 2));
+
+var output = [];
+output.push(new Output('234', 4));
+var trans = new Transaction(input, output);
+
+var rsa = forge.pki.rsa;
+rsa.generateKeyPair({bits: 2048, workers: 2}, function(err, keypair) {
+  // keypair.privateKey, keypair.publicKey
+
+trans.sign(keypair.publicKey);
+});
+
+
+
+
 const pool = new UnverifiedTransactionPool();
 
 var input = [];
@@ -103,14 +121,14 @@ parallel([
   nodes.forEach(node => {
     /**
      * A node cannot dial itself
-     * 
+     *
      * An own protocol has been inventend for the purposes of "muas-coin
      */
 
     if (node !== node1) {
       /**
        * First the nodes will subscribe to the "network"
-       * 
+       *
        * After that the node that wants to send something to the
        * network will dial the protocol and connects to the nodes
        */
@@ -146,11 +164,11 @@ parallel([
             if (err) {
               throw err
             }
-        
+
             console.log('nodeA dialed to nodeB on protocol: /echo/1.0.0');
             console.log("Node: " + node.id);
             counter++;
-        
+
             pull(
               pull.values(['hey']),
               conn,
