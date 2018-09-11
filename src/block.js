@@ -2,14 +2,14 @@ const SHA256 = require('crypto-js/sha256')
 
 class Block {
 
-  constructor(transaction, previousHash) {
+  constructor(transaction, previousBlock) {
     if (Array.isArray(transaction)) {
       this.transaction = transaction;
     } else {
       this.transaction = [];
       this.transaction.push(transaction);
     }
-    this.previousHash = previousHash;
+    this.previousBlock = previousBlock;
     this.nonce = null;
     this.blockHash = null;
   }
@@ -17,8 +17,8 @@ class Block {
   getTransactions() {
     return this.transaction;
   }
-  getPreviousHash() {
-    return this.previousHash;
+  getPreviousBlock() {
+    return this.previousBlock;
   }
   getNonce() {
     return this.nonce;
@@ -40,7 +40,7 @@ class Block {
   }
 
   calculateHash() {
-    return SHA256(this.transaction + this.previousHash + this.nonce).toString();
+    return SHA256(this.transaction + this.previousBlock + this.nonce).toString();
   }
 
 }
