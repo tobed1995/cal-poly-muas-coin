@@ -16,7 +16,7 @@ class Transaction {
       this.output = [];
       this.output.push(outputParam);
     }
-t follows is an attempt to explain, from the ground up, why the particular pieces (digital signatures, proof-of-work, transaction blocks) are needed, and how they all come together to form the "minimum viable block chain" with all of its remarkable properties.
+//t follows is an attempt to explain, from the ground up, why the particular pieces (digital signatures, proof-of-work, transaction blocks) are needed, and how they all come together to form the "minimum viable block chain" with all of its remarkable properties.
     if (Array.isArray(signaturesParam)) {
       this.signatures = signaturesParam;
     } else {

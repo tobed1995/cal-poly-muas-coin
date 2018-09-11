@@ -1,12 +1,34 @@
 'use strict'
 
-var x11 = require('@dashevo/x11-hash-js');
+const x11 = require('@dashevo/x11-hash-js');
 
 class ProofOfWork {
 
-    /** TODO: Figure out what we need as input */
-    constructor(input) {
+    constructor() {
 
+    }
+
+    proofOfWork(nonce, block) {
+        //not implemented because the showcase would take too much time
+        //var targetValue = 0x00000FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF;
+
+        //takes up to 5 - 30 seconds 
+        var targetValue = '000FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF';
+
+        var t0 = new Date();
+
+        while(true) {
+            var x11Hash = this.calculateX11Hash(nonce + block);
+            console.log("x11Hash: " + x11Hash + "; targetValue: " + targetValue + "; true? " + (x11Hash < targetValue));
+            if (x11Hash < targetValue) {
+                var t1 = new Date();
+                console.log("BLOCK MINED IN: " + (t1 - t0) + " milliseconds. Hash of mined block " + x11Hash + " Nonce of mined block: " + nonce);
+                return x11Hash;
+            }
+            
+            nonce++
+        }
+        
     }
 
     calculateX11Hash(input) {
