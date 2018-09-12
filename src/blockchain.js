@@ -18,7 +18,6 @@ class Blockchain {
   addBlock(newBlock) {
     newBlock.hash = newBlock.calculateHash();
     this.chain.push(newBlock);
-    //fs.writeFileSync("chain.json", JSON.stringify(this.chain), {encoding:'utf8',flag:'w'});
   }
 
   checkValid() {
@@ -66,7 +65,7 @@ class Blockchain {
       return false;
     }
 
-    if (!this.isSignatureValid(transaction)) {
+    if (!this.areSignaturesValid(transaction)) {
       console.error('Transaction signatures are invalid.');
       return false;
     }
@@ -110,10 +109,27 @@ class Blockchain {
     return inputLength === signatureLength;
   }
 
-  isSignatureValid(transaction) {
+  areSignaturesValid(transaction) {
     var md = forge.md.sha256.create();
     md.update(transaction.data, 'utf8');
-    var verified = keyPair.publicKey.verify(md.digest().bytes(), trans.getSignatures()[0]);
+
+    for (var index = 0; index < transaction.input.length; index++) {
+      var item = transaction.input[index];
+      let referencedInputTransaction = this.getTransactionByHash(item.transaction_hash);
+      // receiverId == public key of reiceiver
+      var receiverId = referencedInputTransaction.getOutput()[item.output_index].receiverId;
+
+      var inputValidated = false;
+      for (var index2 = 0; index2 < transaction.getSignatures().length; index2++) {
+        var sig = transaction.signatures[index2];
+        if (receiverId.verify(md.digest().bytes(), sig)) {
+
+        }
+        inputValidated = receiverId.verify(md.digest().bytes(), sig);
+      }
+    }
+
+
     return false;
   }
 
