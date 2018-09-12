@@ -1,4 +1,4 @@
-'use strict'
+'use strict';
 
 const x11 = require('@dashevo/x11-hash-js');
 const Block = require('./block');
@@ -11,7 +11,7 @@ class ProofOfWork {
 
     proofOfWork(block) {
         //not implemented because the showcase would take too much time
-        //var targetValue = 0x00000FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF;
+        //var targetValue = '00000FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF';
 
         //takes up to 5 - 30 seconds 
         var targetValue = '000FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF';
@@ -61,33 +61,43 @@ class ProofOfWork {
     blakeHash(input) {
         return x11.blake(input);
     }
+
     bmwHash(input) {
         return x11.bmw(input);
     }
+
     groestlHash(input) {
         return x11.groestl(input);
     }
+
     jhHash(input) {
         return x11.jh(input);
     }
+
     keccakHash(input) {
         return x11.keccak(input);
     }
+
     skeinHash(input) {
         return x11.skein(input);
     }
+
     luffaHash(input) {
         return x11.luffa(input);
     }
+
     cubehashHash(input) {
         return x11.cubehash(input);
     }
+
     shaviteHash(input) {
         return x11.shavite(input);
     }
+
     simdHash(input) {
         return x11.simd(input);
     }
+
     echoHash(input) {
         return x11.echo(input);
     }
