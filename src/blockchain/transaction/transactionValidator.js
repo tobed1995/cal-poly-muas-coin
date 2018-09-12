@@ -9,7 +9,7 @@ class TransactionValidator {
      - The amount of coins in the output is satisfied by the number of coins in the input
      - The total number of coins in the input equals the number of coins in the output
     */
-    verifyTransaction(transaction, blockchain) {
+    verifyTransaction(transaction, chain) {
         console.log('Start validation of transaction ' + transaction.getTransactionHash());
 
         if (!this.isTransactionHashValid(transaction)) {
@@ -20,6 +20,11 @@ class TransactionValidator {
         if (!this.isTransactionSignaturesCountLessOrEqualsInputs(transaction)) {
             console.error('Transaction inputs not matching with number of signatures.');
             return VerifyErrorCode.TOO_MANY_SIGNATURES;
+        }
+
+        if (!this.areOutputsInChain(transaction, chain)) {
+            console.error('Referenced Output is not in chain');
+            return VerifyErrorCode.INPUT_NOT_EXISTS;
         }
 
         if (!this.areSignaturesValid(transaction, chain)) {
@@ -65,6 +70,19 @@ class TransactionValidator {
         var inputLength = transaction.getInput().length;
         var signatureLength = transaction.signatures.length;
         return inputLength >= signatureLength;
+    }
+
+
+    areOutputsInChain(transaction, chain) {
+        for (let index = 0; index < transaction.getInput().length; index++) {
+            let singleInputItem = transaction.getInput()[index];
+            let referencedOutputTransaction = this.getTransactionByHash(singleInputItem.transaction_hash, chain);
+
+            if (referencedOutputTransaction === null || referencedOutputTransaction === undefined) {
+                return false;
+            }
+        }
+        return false;
     }
 
     areSignaturesValid(transaction, chain) {
@@ -194,7 +212,6 @@ class TransactionValidator {
         }
         return null;
     }
-
 }
 
 module.exports = TransactionValidator;
