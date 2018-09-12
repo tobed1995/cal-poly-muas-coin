@@ -25,6 +25,7 @@ class Transaction {
   createTransactionHash() {
     var md = forge.md.sha256.create();
     md.update(this.data + this.signatures);
+    //console.log(md.digest().toHex());
     this.transactionHash = md.digest().toHex();
   }
 
@@ -32,13 +33,17 @@ class Transaction {
   sign(privateKey) {
     var md = forge.md.sha256.create();
     md.update(this.data, 'utf8');
+    //console.log(md.digest().toHex());
+
     var signature = privateKey.sign(md);
     this.signatures.push(signature);
   }
 
-  checkSign(publicKey) {
+/*
+  checkSign(publicKey)  The total number of coins in the input equals the number of coins in the output{
     return publicKey.verify(md.digest().bytes(), signature);
   }
+*/
 
   getInput() {
     return this.input;
