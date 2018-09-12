@@ -12,3 +12,6 @@ console.log(genesisBlock)
 var blockPow = proofOfWork.proofOfWork(genesisBlock);
 
 console.log(proofOfWork.validatePow(blockPow));
+blockPow.nonce = 124142;
+
+console.log(proofOfWork.validatePow(blockPow));
