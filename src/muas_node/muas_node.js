@@ -12,6 +12,7 @@ const defaultsDeep = require('@nodeutils/defaults-deep');
 const pull = require('pull-stream');
 const PeerId = require('peer-id');
 
+const TransactionValidator = require('../blockchain/transaction/transactionValidator');
 class MUASNode extends libp2p {
     constructor(_options) {
         const defaults = {
