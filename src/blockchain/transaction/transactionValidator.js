@@ -9,7 +9,7 @@ class TransactionValidator {
      - The amount of coins in the output is satisfied by the number of coins in the input
      - The total number of coins in the input equals the number of coins in the output
     */
-    verifyTransaction(transaction) {
+    verifyTransaction(transaction, blockchain) {
         console.log('Start validation of transaction ' + transaction.getTransactionHash());
 
         if (!this.isTransactionHashValid(transaction)) {
@@ -22,22 +22,22 @@ class TransactionValidator {
             return VerifyErrorCode.TOO_MANY_SIGNATURES;
         }
 
-        if (!this.areSignaturesValid(transaction)) {
+        if (!this.areSignaturesValid(transaction, chain)) {
             console.error('Transaction signatures are invalid.');
             return VerifyErrorCode.SIGNATURES_INVALID;
         }
 
-        if (!this.areTransactionInputsValid(transaction)) {
+        if (!this.areTransactionInputsValid(transaction, chain)) {
             // Errormessage will be logged in method itself, if anything occurs.
             return VerifyErrorCode.INPUTS_INVALID;
         }
 
-        if (!this.isCoinInputEqualsOutput(transaction)) {
+        if (!this.isCoinInputEqualsOutput(transaction, chain)) {
             console.error('Transaction Input and Output amount not equal.');
             return VerifyErrorCode.COIN_INBALANCE;
         }
 
-        if (!this.isTransactionNotInChainYet(transaction)) {
+        if (!this.isTransactionNotInChainYet(transaction, chain)) {
             console.error('Transaction already in chain!');
             return VerifyErrorCode.ALREADY_IN_CHAIN;
         }
@@ -67,13 +67,13 @@ class TransactionValidator {
         return inputLength >= signatureLength;
     }
 
-    areSignaturesValid(transaction) {
+    areSignaturesValid(transaction, chain) {
         var md = forge.md.sha256.create();
         md.update(transaction.data, 'utf8');
 
         for (var index = 0; index < transaction.getInput().length; index++) {
             var singleInputItem = transaction.getInput()[index];
-            let referencedOutputTransaction = this.getTransactionByHash(singleInputItem.transaction_hash);
+            let referencedOutputTransaction = this.getTransactionByHash(singleInputItem.transaction_hash, chain);
             // senderPubKey == public key of sender which signed this transaction
             var senderPubKey = referencedOutputTransaction.getOutput()[singleInputItem.output_index].receiverId;
 
@@ -96,29 +96,29 @@ class TransactionValidator {
         return true;
     }
 
-    areTransactionInputsValid(transaction) {
+    areTransactionInputsValid(transaction, chain) {
         for (var index = 0; index < transaction.getInput().length; index++) {
             let item = transaction.getInput()[index];
-            let referencedOutputTransaction = this.getTransactionByHash(item.transaction_hash);
+            let referencedOutputTransaction = this.getTransactionByHash(item.transaction_hash, chain);
 
-            if (referencedInputTransaction === null) {
+            if (referencedOutputTransaction === null) {
                 console.error('Output referenced by Input is not in the chain!');
                 return false;
             }
 
-            if (!this.isTransactionOutputNotUsedYet(referencedOutputTransaction, item.output_index)) {
+            if (!this.isTransactionOutputNotUsedYet(referencedOutputTransaction, item.output_index, chain)) {
                 console.error('Transaction Input and Output amount not equal.');
                 return false;
             }
         }
     }
 
-    isTransactionOutputNotUsedYet(transaction, outputIndex) {
+    isTransactionOutputNotUsedYet(transaction, outputIndex, chain) {
         var transHash = transaction.getTransactionHash();
         var amount = 0;
 
-        for (var index = this.chain.length - 1; index >= 0; index--) {
-            var singleBlock = this.chain[index];
+        for (var index = chain.length - 1; index >= 0; index--) {
+            var singleBlock = chain[index];
 
             for (var index2 = 0; index2 < singleBlock.transaction.length; index2++) {
                 var singleTrans = singleBlock.transaction[index2];
@@ -136,7 +136,7 @@ class TransactionValidator {
         return amount < 1;
     }
 
-    isCoinInputEqualsOutput(transaction) {
+    isCoinInputEqualsOutput(transaction, chain) {
         var transOutputSum = 0; // sum of output coins of this transaction.
         var transInputSum = 0; // sum of input coins of this transaction.
         transaction.getOutput().forEach(function (item) {
@@ -144,7 +144,7 @@ class TransactionValidator {
         });
         for (var index = 0; index < transaction.getInput().length; index++) {
             let item = transaction.getInput()[index];
-            let referencedInputTransaction = this.getTransactionByHash(item.transaction_hash);
+            let referencedInputTransaction = this.getTransactionByHash(item.transaction_hash, chain);
 
             transInputSum += referencedInputTransaction.getOutput()[item.output_index].amount;
         }
@@ -152,8 +152,8 @@ class TransactionValidator {
         return transOutputSum === transInputSum;
     }
 
-    isTransactionNotInChainYet(transaction) {
-        return this.getTransactionByHash(transaction.getTransactionHash()) !== null;
+    isTransactionNotInChainYet(transaction, chain) {
+        return this.getTransactionByHash(transaction.getTransactionHash(), chain) !== null;
     }
 
     areTransactionInputsUnique(transaction) {
@@ -180,9 +180,9 @@ class TransactionValidator {
     /*
     * Helper Funktion to get a Single Transaction out of Blockchain with Hashpointer
     */
-    getTransactionByHash(transactionHash) {
-        for (var index = 0; index < this.chain.length; index++) {
-            var singleBlock = this.chain[index];
+    getTransactionByHash(transactionHash, chain) {
+        for (var index = 0; index < chain.length; index++) {
+            var singleBlock = chain[index];
 
             for (var index2 = 0; index2 < singleBlock.transaction.length; index2++) {
                 var singleTrans = singleBlock.transaction[index2];
