@@ -113,7 +113,7 @@ class Blockchain {
     }
 
     isTransactionSignaturesCountLessOrEqualsInputs(transaction) {
-        var inputLength = transaction.input.length;
+        var inputLength = transaction.getInput().length;
         var signatureLength = transaction.signatures.length;
         return inputLength >= signatureLength;
     }
@@ -122,8 +122,8 @@ class Blockchain {
         var md = forge.md.sha256.create();
         md.update(transaction.data, 'utf8');
 
-        for (var index = 0; index < transaction.input.length; index++) {
-            var singleInputItem = transaction.input[index];
+        for (var index = 0; index < transaction.getInput().length; index++) {
+            var singleInputItem = transaction.getInput()[index];
             let referencedOutputTransaction = this.getTransactionByHash(singleInputItem.transaction_hash);
             // senderPubKey == public key of sender which signed this transaction
             var senderPubKey = referencedOutputTransaction.getOutput()[singleInputItem.output_index].receiverId;
@@ -208,14 +208,14 @@ class Blockchain {
     }
 
     areTransactionInputsUnique(transaction) {
-        for (var index = 0; index < transaction.input.length; index++) {
-            var currInput = transaction.input[index];
+        for (var index = 0; index < transaction.getInput().length; index++) {
+            var currInput = transaction.getInput()[index];
 
-            for (var index2 = 0; index2 < transaction.input.length; index2++) {
+            for (var index2 = 0; index2 < transaction.getInput().length; index2++) {
                 if (index === index2) {
                     continue;
                 }
-                var input2 = transaction.input[index2];
+                var input2 = transaction.getInput()[index2];
 
                 if (currInput.transaction_hash === input2.transaction_hash) {
                     if (currInput.output_index === input2.output_index) {

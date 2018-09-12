@@ -45,11 +45,11 @@ class Transaction {
     */
 
     getInput() {
-        return this.input;
+        return this.data.input;
     }
 
     getOutput() {
-        return this.output;
+        return this.data.output;
     }
 
     getSignatures() {
