@@ -33,70 +33,21 @@ class ProofOfWork {
         }
     }
 
-    handlePromises() {
-        var p1 = this.promiseExample();
-        var p2 = this.promiseExample();
-        //wait for more than 1 promise to return
-        Promise.all([p1, p2]).then(function (values) {
-            //"returned value"
-            var value = values[0];
-        }).catch(function (errors) {
-            //when 1 or more function calls run into reject()
-        });
+    validatePow(block) {
 
-        //waiting for a promise _->
-        this.promiseExample().then(function (value) {
-            //in case resolved
-            //value == "returned value"
-            //do stuff
-        }).catch(function (error) {
-            //in case rejected
-        })
-    }
+        var nonceOfBlock = block.getNonce();
 
-
-    promiseExample() {
-        return new Promise(function (resolve, reject) {
-            if (true === true) {
-                resolve("returned value");
-            } else {
-                reject();
-            }
-        })
-    }
-
-    validatePow() {
-        //waiting for a promise _->
-        this.checkPoWPromise().then(function (value) {
-            //in case resolved
-            return value;
-        }).catch(function (error) {
-            return value;
-        })
-    }
-
-    checkPoWPromise(block) {
-        return new Promise(function (resolve, reject) {
-
-            var nonceOfBlock = block.getNonce();
-            var hashOfBlock = block.getBlockHash();
-            var x11HashBlock = this.proofOfWork(nonceOfBlock, block);
-
-            if (hashOfBlock === x11HashBlock) {
-                resolve(true);
-            } else {
-                reject(false);
-            }
-        })
-
-        /*var nonceOfBlock = block.getNonce();
         var hashOfBlock = block.getBlockHash();
-        var x11HashBlock = this.proofOfWork(nonceOfBlock, block);
+
+        var x11HashBlock = this.calculateX11Hash(nonceOfBlock + block);
+
+        console.log(block)
 
         if(hashOfBlock === x11HashBlock) {
             return true;
+        } else {
+            return false;
         }
-        return false;*/
     }
 
     calculateX11Hash(input) {
