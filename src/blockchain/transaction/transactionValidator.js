@@ -1,5 +1,7 @@
 const VerifyErrorCode = require("./verificationErrorCodes");
 
+const forge = require('node-forge')
+
 class TransactionValidator {
 
     /*
@@ -9,7 +11,7 @@ class TransactionValidator {
      - The amount of coins in the output is satisfied by the number of coins in the input
      - The total number of coins in the input equals the number of coins in the output
     */
-    verifyTransaction(transaction, blockchain) {
+    verifyTransaction(transaction, chain) {
         console.log('Start validation of transaction ' + transaction.getTransactionHash());
 
         if (!this.isTransactionHashValid(transaction)) {
@@ -52,34 +54,34 @@ class TransactionValidator {
 
 
     isTransactionHashValid(transaction) {
-        var hash = transaction.transactionHash;
+        let hash = transaction.transactionHash;
 
         if (hash === undefined || hash === null || hash === '') {
             return false;
         }
-        var md = forge.md.sha256.create();
+        let md = forge.md.sha256.create();
         return hash === md.update(transaction.data + transaction.signatures).digest().toHex();
     }
 
     isTransactionSignaturesCountLessOrEqualsInputs(transaction) {
-        var inputLength = transaction.getInput().length;
-        var signatureLength = transaction.signatures.length;
+        let inputLength = transaction.getInput().length;
+        let signatureLength = transaction.signatures.length;
         return inputLength >= signatureLength;
     }
 
     areSignaturesValid(transaction, chain) {
-        var md = forge.md.sha256.create();
+        let md = forge.md.sha256.create();
         md.update(transaction.data, 'utf8');
 
-        for (var index = 0; index < transaction.getInput().length; index++) {
-            var singleInputItem = transaction.getInput()[index];
+        for (let index = 0; index < transaction.getInput().length; index++) {
+            let singleInputItem = transaction.getInput()[index];
             let referencedOutputTransaction = this.getTransactionByHash(singleInputItem.transaction_hash, chain);
             // senderPubKey == public key of sender which signed this transaction
-            var senderPubKey = referencedOutputTransaction.getOutput()[singleInputItem.output_index].receiverId;
+            let senderPubKey = referencedOutputTransaction.getOutput()[singleInputItem.output_index].receiverId;
 
-            var inputValidated = false;
-            for (var index2 = 0; index2 < transaction.getSignatures().length; index2++) {
-                var sig = transaction.signatures[index2];
+            let inputValidated = false;
+            for (let index2 = 0; index2 < transaction.getSignatures().length; index2++) {
+                let sig = transaction.signatures[index2];
 
                 if (senderPubKey.verify(md.digest().bytes(), sig)) {
                     inputValidated = true;
@@ -97,7 +99,7 @@ class TransactionValidator {
     }
 
     areTransactionInputsValid(transaction, chain) {
-        for (var index = 0; index < transaction.getInput().length; index++) {
+        for (let index = 0; index < transaction.getInput().length; index++) {
             let item = transaction.getInput()[index];
             let referencedOutputTransaction = this.getTransactionByHash(item.transaction_hash, chain);
 
@@ -114,17 +116,17 @@ class TransactionValidator {
     }
 
     isTransactionOutputNotUsedYet(transaction, outputIndex, chain) {
-        var transHash = transaction.getTransactionHash();
-        var amount = 0;
+        let transHash = transaction.getTransactionHash();
+        let amount = 0;
 
-        for (var index = chain.length - 1; index >= 0; index--) {
-            var singleBlock = chain[index];
+        for (let index = chain.length - 1; index >= 0; index--) {
+            let singleBlock = chain[index];
 
-            for (var index2 = 0; index2 < singleBlock.transaction.length; index2++) {
-                var singleTrans = singleBlock.transaction[index2];
+            for (let index2 = 0; index2 < singleBlock.transaction.length; index2++) {
+                let singleTrans = singleBlock.transaction[index2];
 
-                for (var index3 = 0; index3 < singleTrans.getInput().length; index3++) {
-                    var singleInput = singleTrans.getInput();
+                for (let index3 = 0; index3 < singleTrans.getInput().length; index3++) {
+                    let singleInput = singleTrans.getInput();
 
                     if (singleInput.transaction_hash === transHash
                         && singleInput.output_index === outputIndex) {
@@ -137,12 +139,12 @@ class TransactionValidator {
     }
 
     isCoinInputEqualsOutput(transaction, chain) {
-        var transOutputSum = 0; // sum of output coins of this transaction.
-        var transInputSum = 0; // sum of input coins of this transaction.
+        let transOutputSum = 0; // sum of output coins of this transaction.
+        let transInputSum = 0; // sum of input coins of this transaction.
         transaction.getOutput().forEach(function (item) {
             transOutputSum += item.getAmount();
         });
-        for (var index = 0; index < transaction.getInput().length; index++) {
+        for (let index = 0; index < transaction.getInput().length; index++) {
             let item = transaction.getInput()[index];
             let referencedInputTransaction = this.getTransactionByHash(item.transaction_hash, chain);
 
@@ -157,14 +159,14 @@ class TransactionValidator {
     }
 
     areTransactionInputsUnique(transaction) {
-        for (var index = 0; index < transaction.getInput().length; index++) {
-            var currInput = transaction.getInput()[index];
+        for (let index = 0; index < transaction.getInput().length; index++) {
+            let currInput = transaction.getInput()[index];
 
-            for (var index2 = 0; index2 < transaction.getInput().length; index2++) {
+            for (let index2 = 0; index2 < transaction.getInput().length; index2++) {
                 if (index === index2) {
                     continue;
                 }
-                var input2 = transaction.getInput()[index2];
+                let input2 = transaction.getInput()[index2];
 
                 if (currInput.transaction_hash === input2.transaction_hash) {
                     if (currInput.output_index === input2.output_index) {
@@ -181,11 +183,11 @@ class TransactionValidator {
     * Helper Funktion to get a Single Transaction out of Blockchain with Hashpointer
     */
     getTransactionByHash(transactionHash, chain) {
-        for (var index = 0; index < chain.length; index++) {
-            var singleBlock = chain[index];
+        for (let index = 0; index < chain.length; index++) {
+            let singleBlock = chain[index];
 
-            for (var index2 = 0; index2 < singleBlock.transaction.length; index2++) {
-                var singleTrans = singleBlock.transaction[index2];
+            for (let index2 = 0; index2 < singleBlock.transaction.length; index2++) {
+                let singleTrans = singleBlock.transaction[index2];
 
                 if (singleTrans.getTransactionHash() === transactionHash) {
                     return singleTrans;

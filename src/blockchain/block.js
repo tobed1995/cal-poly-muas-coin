@@ -17,50 +17,42 @@ class Block {
         this.blockHash = null;
     }
 
-  get getTransactions() {
-    return this.transaction;
-  }
-  get getPreviousHash() {
-    return this.previousHash;
-  }
-  get getNonce() {
-    return this.nonce;
-  }
-  get getBlockHash() {
-    return this.blockHash;
-  }
+    get getTransactions() {
+        return this.transaction;
+    }
 
-  set setNonce(nonce) {
+    get getPreviousHash() {
+        return this.previousHash;
+    }
+
+    get getNonce() {
+        return this.nonce;
+    }
+
+    get getBlockHash() {
+        return this.blockHash;
+    }
+
+    set setNonce(nonce) {
         if (this.nonce === 0) {
-        this._nonce = nonce;
+            this._nonce = nonce;
         }
     }
 
-  set setBlockHash(hash) {
-    if (this.blockHash === null) {
-      this._blockHash = hash;
+    set setBlockHash(hash) {
+        if (this.blockHash === null) {
+            this._blockHash = hash;
+        }
     }
-  }
 
-  getGenesisBlock() {
-    //the genesis block has 25 coins
-    var amountOfCoins = 25;
-    var input = null;
-    /**
-     * TODO: Figure out what we can put to pubKey for genesis block
-     */
-    var output = new Output("pubKey", amountOfCoins);
-    var transactionTemp = new Transaction(null, output);
-    var genesisBlock = new Block(transactionTemp, null);
-  }
-    getGenesisBlock() {
+    static getGenesisBlock(pubKey) {
         //the genesis block has 25 coins
         var amountOfCoins = 25;
         var input = null;
         /**
          * TODO: Figure out what we can put to pubKey for genesis block
          */
-        var output = new Output("pubKey", amountOfCoins);
+        var output = new Output(pubKey, amountOfCoins);
         var transactionTemp = new Transaction(null, output);
         var genesisBlock = new Block(transactionTemp, null);
 

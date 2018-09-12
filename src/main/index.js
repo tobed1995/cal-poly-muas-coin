@@ -7,7 +7,6 @@ const parallel = require('async/parallel');
 const each = require('async/each');
 const pull = require('pull-stream');
 
-const Blockchain = require('../blockchain/blockchain');
 const Transaction = require('../blockchain/transaction/transaction');
 const Input = require('../blockchain/transaction/input');
 const Output = require('../blockchain/transaction/output');
@@ -20,7 +19,7 @@ const app = require('express')();
 const http = require('http').Server(app);
 const io = require('socket.io')(http);
 
-const winston = require('winston')
+const logger = require('../logger/logger')
 
 // Declare static folder to be served. It contains the js, images, css, etc.
 app.use(require('express').static(path.join(__dirname, '..', 'visualization')));
@@ -33,30 +32,70 @@ http.listen(8080, () => {
 });
 
 parallel([
-    (cb) => muas_node.createNode(io, cb)
+    (cb) => muas_node.createNode(io, cb, null)
 
 ], (err, nodes) => {
     if (err) {
         throw err;
     }
-
-    let transaction_pool = new muas_unverfied_pool_node.MUAS_Unverified_Pool_Node(io);
     let node1 = nodes[0];
+    let transaction_pool = new muas_unverfied_pool_node.MUAS_Unverified_Pool_Node(io, node1.chain[0]);
+
+    parallel([
+        (cb) => muas_node.createNode(io, cb, node1.chain[0]),
+        (cb) => muas_node.createNode(io, cb, node1.chain[0]),
+        (cb) => muas_node.createNode(io, cb, node1.chain[0]),
+        (cb) => muas_node.createNode(io, cb, node1.chain[0])
+    ], (err, nodes) => {
+
+        let input = [];
+        let output = [];
+//
+        input.push(new Input('0xblub', 4));
+        output.push(new Output('234', 4));
+
+        let transaction = new Transaction(input, output);
+        transaction.sign(node1.priv_sign_key);
+        transaction.createTransactionHash();
 
 
-    setInterval(function () {
-        let transaction = {
-            "transactionHash": "hash256 " + Math.floor(Math.random() * Math.floor(100)),
-            "amount": Math.floor(Math.random() * Math.floor(1000))
-        }
-        node1.broadcast_add_verified_transaction_to_chain(transaction).then(function(transaction){
-        });
+        setInterval(function () {
 
-        node1.broadcast_add_verified_transaction(transaction).then(function(transaction){
-        });
+            node1.broadcast_add_unverified_transaction(transaction);
 
+            node1.broadcast_get_random_transaction().then(function (transaction) {
+                logger.info('fetched trans');
+                node1.verify_transaction(transaction, node1.chain).then(function () {
+                    logger.info('validated transaction');
+                }).catch(function (opCode) {
+                    logger.info('failed validation with opCode %s', opCode);
+                    //verification failed ... aborting
+                    if (opCode === -1) {
 
-    }, 2000);
+                    }
+                    if (opCode === -2) {
+
+                    }
+                    if (opCode === -3) {
+
+                    }
+                    if (opCode === -4) {
+
+                    }
+                    if (opCode === -5) {
+
+                    }
+                    if (opCode === -6) {
+
+                    }
+                    if (opCode === -7) {
+
+                    }
+                });
+            });
+
+        }, 2000);
+    });
 
 
 });

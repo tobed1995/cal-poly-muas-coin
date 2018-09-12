@@ -12,7 +12,13 @@ const defaultsDeep = require('@nodeutils/defaults-deep');
 const pull = require('pull-stream');
 const PeerId = require('peer-id');
 
-const p_o_w = require('../blockchain/pow');
+const TransactionValidator = require('../blockchain/transaction/transactionValidator')
+const Transaction = require('../blockchain/transaction/transaction')
+const p_o_w = require('../blockchain/pow')
+const Block = require('../blockchain/block')
+const logger = require('../logger/logger')
+
+const forge = require('node-forge')
 
 
 class MUASNode extends libp2p {
@@ -131,30 +137,38 @@ class MUASNode extends libp2p {
 
     broadcast_get_random_transaction() {
         let self = this;
-        self.available_peers.forEach((peer) => {
-            self.dialProtocol(peer, '/get_random_transaction', (err, conn) => {
-                if (err) {
-                    return
-                }
-                pull(
-                    conn,
-                    pull.collect(function (err, transaction) {
-                        if (transaction !== null && typeof transaction !== 'undefined' && transaction.length > 0) {
-                            let transObj = JSON.parse(transaction.join(''));
-                            //start working on transaction verification --> stub it by now.
-                            if (self.verify_transaction(transObj)) {
-                                //broadcast message to the verified pool
-                                self.broadcast_add_verified_transaction(transObj);
+        return new Promise(function(resolve){
+            self.available_peers.forEach((peer) => {
+                self.dialProtocol(peer, '/get_random_transaction', (err, conn) => {
+                    if (err) {
+                        return
+                    }
+                    pull(
+                        conn,
+                        pull.collect(function (err, transaction) {
+                            if (transaction !== null && typeof transaction !== 'undefined' && transaction.length > 0) {
+                                let transObj = JSON.parse(transaction.join(''));
+                                resolve(transObj);
+                                //start working on transaction verification --> stub it by now.
+                                /*
+                                if (self.verify_transaction(transObj)) {
+                                    //broadcast message to the verified pool
+                                    self.broadcast_add_verified_transaction(transObj);
+                                } else {
+                                    // if signature faked -> delete
+                                    // if just not valid -> return to pool
+                                    self.broadcast_delete_unverified_transaction(transObj);
+                                }
+                                */
                             } else {
-                                self.broadcast_delete_unverified_transaction(transObj);
+                                //not generated yet --> add handling here ?!?
                             }
-                        } else {
-                            //not generated yet --> add handling here ?!?
-                        }
-                    })
-                )
+                        })
+                    )
+                });
             });
         });
+
     }
 
     broadcast_delete_unverified_transaction(transaction) {
@@ -193,9 +207,19 @@ class MUASNode extends libp2p {
     }
 
 
-    verify_transaction(transaction) {
-
-        return true;
+    verify_transaction(transaction,chain) {
+        let validator = new TransactionValidator();
+        let self = this;
+        return new Promise(function(resolve,reject){
+            transaction = Object.setPrototypeOf(transaction, Transaction.prototype)
+           let opCode = validator.verifyTransaction(transaction,chain);
+           logger.info('node id %s validating transactionHash %s',self.id,transaction.transactionHash);
+            if(opCode === 0 ){
+                resolve();
+            }else{
+                reject(opCode);
+            }
+        });
     }
 
     proof_of_work(transaction) {
@@ -208,7 +232,7 @@ class MUASNode extends libp2p {
 }
 
 
-let createNode = function (io, callback) {
+let createNode = function (io, callback, genesisBlock) {
     let node;
     PeerId.create({
         bits: 1024
@@ -224,8 +248,19 @@ let createNode = function (io, callback) {
                 node = new MUASNode({
                     peerInfo
                 });
+                let rsa = forge.pki.rsa;
+                let keypair = rsa.generateKeyPair({bits: 1024, e: 0x10001});
+                node.priv_sign_key = keypair.privateKey;
+                node.pub_sign_key = keypair.publicKey;
+
+
                 node.id = peerInfo.id.toB58String();
-                //define protocols here
+                node.chain = [];
+                if(genesisBlock === null || typeof genesisBlock === 'undefined'){
+                    node.chain.push(Block.getGenesisBlock(node.priv_sign_key));
+                }else{
+                    node.chain.push(genesisBlock);
+                }
 
                 node.on('peer:discovery', (peer) => {
                     io.emit('nodeDiscovered', {

@@ -13,21 +13,12 @@ const pull = require('pull-stream');
 const PeerId = require('peer-id');
 const muas_node = require('../muas_node/muas_node');
 
-const { createLogger, format, transports } = require('winston');
-
-const logger = createLogger({
-    format: format.combine(
-        format.splat(),
-        format.simple()
-    ),
-    transports: [new transports.Console()]
-});
-
+const logger = require('../logger/logger')
 
 
 class MUAS_Unverified_Pool_Node {
 
-    constructor(io) {
+    constructor(io,genesisBlock) {
         let self = this;
 
         muas_node.createNode(io, function (err, node) {
@@ -107,7 +98,7 @@ class MUAS_Unverified_Pool_Node {
                 )
             });
 
-        });
+        },genesisBlock);
     }
 
     print_pool() {
