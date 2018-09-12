@@ -13,11 +13,6 @@ const series = require('async/series');
 const pull = require('pull-stream');
 
 const forge = require('node-forge');
-const UnverifiedTransactionPool = require('./unverifiedTransactionPool');
-const Blockchain = require('./blockchain');
-const Transaction = require('./transaction');
-const Input = require('./input');
-const Output = require('./output');
 const Block = require('./block');
 
 const UnverifiedTransactionPool = require('./unverifiedTransactionPool');
@@ -25,7 +20,6 @@ const Blockchain = require('./blockchain');
 const Transaction = require('./transaction');
 const Input = require('./input');
 const Output = require('./output');
-const TransactionType = require('./transaction-type');
 
 const MUASNode = require('./muasNode');
 
@@ -57,7 +51,7 @@ var output = [];
 output.push(new Output('234', 4));
 pool.pushTransaction(new Transaction(input, output, null));
 pool.pushTransaction(new Transaction(input, output, null));
-pool.pushTransaction(new Transaction(input, output, null));
+pool.pushTransaction(new Transaction(input, output));
 console.log(JSON.stringify(pool.getPool(), null, 4));
 pool.getRandomTransaction();
 input.push(new Input('234', 5));
