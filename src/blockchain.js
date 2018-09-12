@@ -68,7 +68,7 @@ class Blockchain {
             return false;
         }
 
-        if (!this.isTransactionInputEqualsSignatures(transaction)) {
+        if (!this.isTransactionSignaturesCountLessOrEqualsInputs(transaction)) {
             console.error('Transaction inputs not matching with number of signatures.');
             return false;
         }
@@ -112,10 +112,10 @@ class Blockchain {
         return hash === md.update(transaction.data + transaction.signatures).digest().toHex();
     }
 
-    isTransactionInputEqualsSignatures(transaction) {
+    isTransactionSignaturesCountLessOrEqualsInputs(transaction) {
         var inputLength = transaction.input.length;
         var signatureLength = transaction.signatures.length;
-        return inputLength === signatureLength;
+        return inputLength >= signatureLength;
     }
 
     areSignaturesValid(transaction) {
