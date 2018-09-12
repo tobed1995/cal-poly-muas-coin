@@ -139,6 +139,7 @@ class MUAS_Unverified_Pool_Node {
         }
     }
 
+    // TODO need to be implemented w/o stub!!!!
     add_verified_transaction_to_chain(transaction){
         transaction = JSON.parse(transaction.toString());
         if(this.chain !== null && typeof this.chain !== 'undefined'){
