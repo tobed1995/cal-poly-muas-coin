@@ -1,6 +1,6 @@
 'use strict';
 
-const x11 = require('@dashevo/x11-hash-js');
+const x11 = require('x11-hash-js');
 
 class ProofOfWork {
 
@@ -10,7 +10,7 @@ class ProofOfWork {
 
     proofOfWork(nonce, block) {
         //not implemented because the showcase would take too much time
-        //var targetValue = 0x00000FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF;
+        //var targetValue = '00000FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF';
 
         //takes up to 5 - 30 seconds 
         var targetValue = '000FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF';
