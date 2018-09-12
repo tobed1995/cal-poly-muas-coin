@@ -1,41 +1,41 @@
-const Transaction = require('./transaction')
+const Transaction = require('./transaction');
 
 class UnverifiedTransactionPool {
 
-  constructor() {
-      this.transArray = [];
-  }
-
-  pushTransaction(transaction) {
-    if (transaction === undefined || transaction === null) {
-      console.error('Transaction can not be null or undefined!');
-      return false;
+    constructor() {
+        this.transArray = [];
     }
 
-    this.transArray.push(transaction);
-    console.log('Push new length: ' + this.transArray.length);
-    return true;
-  }
+    pushTransaction(transaction) {
+        if (transaction === undefined || transaction === null) {
+            console.error('Transaction can not be null or undefined!');
+            return false;
+        }
 
-  getRandomTransaction() {
-    if (this.transArray.length < 1) return null;
+        this.transArray.push(transaction);
+        console.log('Push new length: ' + this.transArray.length);
+        return true;
+    }
 
-    const index = Math.floor(Math.random()*this.transArray.length);
+    getRandomTransaction() {
+        if (this.transArray.length < 1) return null;
 
-    this.transArray.sort(() => Math.random() - 0.5);
-    const transaction = this.transArray.splice(index,1)[0];
+        const index = Math.floor(Math.random() * this.transArray.length);
 
-    console.log('New size of pool: ' + this.transArray.length);
-    return transaction;
-  }
+        this.transArray.sort(() => Math.random() - 0.5);
+        const transaction = this.transArray.splice(index, 1)[0];
 
-  getCurrentPoolSize() {
-      return this.transArray.length;
-  }
+        console.log('New size of pool: ' + this.transArray.length);
+        return transaction;
+    }
 
-  getPool() {
-    return this.transArray;
-  }
+    getCurrentPoolSize() {
+        return this.transArray.length;
+    }
+
+    getPool() {
+        return this.transArray;
+    }
 }
 
-module.exports = UnverifiedTransactionPool
+module.exports = UnverifiedTransactionPool;

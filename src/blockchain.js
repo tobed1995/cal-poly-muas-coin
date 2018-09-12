@@ -1,4 +1,4 @@
-const Block = require('./block')
+const Block = require('./block');
 const forge = require('node-forge');
 
 class Blockchain {
