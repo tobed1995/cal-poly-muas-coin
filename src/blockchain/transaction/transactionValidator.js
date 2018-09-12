@@ -24,6 +24,11 @@ class TransactionValidator {
             return VerifyErrorCode.TOO_MANY_SIGNATURES;
         }
 
+        if (!this.areOutputsInChain(transaction, chain)) {
+            console.error('Referenced Output is not in chain');
+            return VerifyErrorCode.INPUT_NOT_EXISTS;
+        }
+
         if (!this.areSignaturesValid(transaction, chain)) {
             console.error('Transaction signatures are invalid.');
             return VerifyErrorCode.SIGNATURES_INVALID;
@@ -67,6 +72,19 @@ class TransactionValidator {
         let inputLength = transaction.getInput().length;
         let signatureLength = transaction.signatures.length;
         return inputLength >= signatureLength;
+    }
+
+
+    areOutputsInChain(transaction, chain) {
+        for (let index = 0; index < transaction.getInput().length; index++) {
+            let singleInputItem = transaction.getInput()[index];
+            let referencedOutputTransaction = this.getTransactionByHash(singleInputItem.transaction_hash, chain);
+
+            if (referencedOutputTransaction === null || referencedOutputTransaction === undefined) {
+                return false;
+            }
+        }
+        return false;
     }
 
     areSignaturesValid(transaction, chain) {
@@ -196,7 +214,6 @@ class TransactionValidator {
         }
         return null;
     }
-
 }
 
 module.exports = TransactionValidator;

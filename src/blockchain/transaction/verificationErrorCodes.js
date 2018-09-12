@@ -6,7 +6,8 @@ const VerifyErrorCode = {
     INPUTS_INVALID: -4,
     COIN_INBALANCE: -5,
     ALREADY_IN_CHAIN: -6,
-    DUPLICATE_INPUT: -7
+    DUPLICATE_INPUT: -7,
+    INPUT_NOT_EXISTS: -8
 };
 
 module.exports = VerifyErrorCode;
