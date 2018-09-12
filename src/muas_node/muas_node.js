@@ -7,10 +7,12 @@ const SECIO = require('libp2p-secio');
 const PeerInfo = require('peer-info');
 const MulticastDNS = require('libp2p-mdns');
 const waterfall = require('async/waterfall');
-const parallel = require('async/parallel');
 const defaultsDeep = require('@nodeutils/defaults-deep');
 const pull = require('pull-stream');
 const PeerId = require('peer-id');
+
+const p_o_w = require('../blockchain/pow')
+
 
 class MUASNode extends libp2p {
     constructor(_options) {
@@ -39,40 +41,99 @@ class MUASNode extends libp2p {
     }
 
     broadcast_add_unverified_transaction(transaction) {
-        var self = this;
-        this.available_peers.forEach(function (peer) {
-            self.dialProtocol(peer, '/add_unverified_transaction', function (err, conn) {
+        let self = this;
+        if (transaction !== null && typeof transaction !== 'undefined') {
+            self.available_peers.forEach(function (peer) {
+                self.dialProtocol(peer, '/add_unverified_transaction', function (err, conn) {
+                    if (err) {
+                        return
+                    }
+                    pull(
+                        pull.values([JSON.stringify(transaction)]),
+                        conn
+                    )
+
+                });
+            });
+
+        } else {
+        }
+    }
+
+    broadcast_add_verified_transaction(transaction) {
+        let self = this;
+        return new Promise(function (resolve, reject) {
+            if (transaction !== null && typeof transaction !== 'undefined') {
+                self.available_peers.forEach(function (peer) {
+                    self.dialProtocol(peer, '/add_verified_transaction', function (err, conn) {
+                        if (err) {
+                            return
+                        }
+                        pull(
+                            pull.values([JSON.stringify(transaction)]),
+                            conn
+                        )
+                    });
+                });
+                resolve(transaction);
+            } else {
+                reject();
+            }
+
+        });
+    }
+
+    broadcast_get_verified_transaction() {
+        let self = this;
+        self.available_peers.forEach((peer) => {
+            self.dialProtocol(peer, '/get_verified_transaction', (err, conn) => {
                 if (err) {
                     return
                 }
+
                 pull(
-                    pull.values([JSON.stringify(transaction)]),
-                    conn
+                    conn,
+                    pull.collect(function (err, transaction) {
+                        if (transaction !== null, typeof transaction !== 'undefined' && transaction.length > 0) {
+                            let transObj = JSON.parse(transaction.join(''));
+                            //start calculating proof_of_work
+                            let p_o_w = self.proof_of_work(transObj).then(function (transObj) {
+                                console.log('calculated proof of work -> success\n' + JSON.stringify(transObj));
+                                //add to chain
+                                self.broadcast_add_verified_transaction_to_chain(transObj);
+                            });
+
+                        }
+                    })
                 )
             });
         });
     }
 
-    broadcast_add_verified_transaction(transaction) {
-        var self = this;
-        this.available_peers.forEach(function (peer) {
-            self.dialProtocol(peer, '/add_verified_transaction', function (err, conn) {
-                if (err) {
-                    return
-                }
-                pull(
-                    pull.values([JSON.stringify(transaction)]),
-                    conn
-                )
+    broadcast_add_verified_transaction_to_chain(transaction) {
+        let self = this;
+        return new Promise(function (resolve, reject) {
+            self.available_peers.forEach((peer) => {
+                self.dialProtocol(peer, '/add_verified_transaction_to_chain', (err, conn) => {
+                    if (err) {
+                        return
+                    }
+                    pull(
+                        pull.values([JSON.stringify(transaction)]),
+                        conn
+                    )
+                });
             });
+            resolve(transaction);
         });
+
     }
 
 
     broadcast_get_random_transaction() {
-        var self = this;
-        this.available_peers.forEach((peer) => {
-            this.dialProtocol(peer, '/get_random_transaction', (err, conn) => {
+        let self = this;
+        self.available_peers.forEach((peer) => {
+            self.dialProtocol(peer, '/get_random_transaction', (err, conn) => {
                 if (err) {
                     return
                 }
@@ -83,12 +144,10 @@ class MUASNode extends libp2p {
                             let transObj = JSON.parse(transaction.join(''));
                             //start working on transaction verification --> stub it by now.
                             if (self.verify_transaction(transObj)) {
-                                //broadcast message to the verified pool
                                 self.broadcast_add_verified_transaction(transObj);
                             } else {
-
+                                self.broadcast_delete_unverified_transaction(transObj);
                             }
-                            self.broadcast_delete_unverified_transaction(transObj);
                         } else {
                             //not generated yet --> add handling here ?!?
                         }
@@ -99,47 +158,58 @@ class MUASNode extends libp2p {
     }
 
     broadcast_delete_unverified_transaction(transaction) {
-        var self = this;
-        this.available_peers.forEach(function (peer) {
-            self.dialProtocol(peer, '/delete_unverified_transaction', function (err, conn) {
-                if (err) {
-                    return
-                }
-                pull(
-                    pull.values([JSON.stringify(transaction)]),
-                    conn
-                )
+        let self = this;
+        if (transaction !== null && typeof transaction !== 'undefined') {
+            self.available_peers.forEach(function (peer) {
+                self.dialProtocol(peer, '/delete_unverified_transaction', function (err, conn) {
+                    if (err) {
+                        return
+                    }
+                    pull(
+                        pull.values([JSON.stringify(transaction)]),
+                        conn
+                    )
+                });
             });
-        });
+        }
+
     }
 
     broadcast_delete_verified_transaction(transaction) {
-        var self = this;
-        this.available_peers.forEach(function (peer) {
-            self.dialProtocol(peer, '/delete_verified_transaction', function (err, conn) {
-                if (err) {
-                    return
-                }
-                pull(
-                    pull.values([JSON.stringify(transaction)]),
-                    conn
-                )
+        let self = this;
+        if (transaction !== null && typeof transaction !== 'undefined') {
+            self.available_peers.forEach(function (peer) {
+                self.dialProtocol(peer, '/delete_verified_transaction', function (err, conn) {
+                    if (err) {
+                        return
+                    }
+                    pull(
+                        pull.values([JSON.stringify(transaction)]),
+                        conn
+                    )
+                });
             });
-        });
+        }
+
     }
 
 
     verify_transaction(transaction) {
+
         return true;
     }
 
     proof_of_work(transaction) {
-        return true;
+        return new Promise(function (resolve) {
+            //do stuff here
+            transaction.p_o_w = 'proof_of_work_d13d';
+            resolve(transaction);
+        });
     }
 }
 
 
-var createNode = function (io, callback) {
+let createNode = function (io, callback) {
     let node;
     PeerId.create({
         bits: 1024

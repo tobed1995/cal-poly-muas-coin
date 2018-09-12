@@ -1,5 +1,5 @@
 const muas_node = require('../muas_node/muas_node');
-const muas_unverfied_pool_node = require('../pools/unverified_transaction_pool');
+const muas_unverfied_pool_node = require('../pools/transaction_pool');
 const PeerInfo = require('peer-info');
 
 const waterfall = require('async/waterfall');
@@ -7,11 +7,20 @@ const parallel = require('async/parallel');
 const each = require('async/each');
 const pull = require('pull-stream');
 
-var path = require("path");
+const Blockchain = require('../blockchain/blockchain');
+const Transaction = require('../blockchain/transaction/transaction');
+const Input = require('../blockchain/transaction/input');
+const Output = require('../blockchain/transaction/output');
+const TransactionValidator = require('../blockchain/transaction/transactionValidator')
+const forge = require('node-forge');
+const Block = require('../blockchain/block');
 
-var app = require('express')();
-var http = require('http').Server(app);
-var io = require('socket.io')(http);
+const path = require("path");
+const app = require('express')();
+const http = require('http').Server(app);
+const io = require('socket.io')(http);
+
+const winston = require('winston')
 
 // Declare static folder to be served. It contains the js, images, css, etc.
 app.use(require('express').static(path.join(__dirname, '..', 'visualization')));
@@ -24,88 +33,44 @@ http.listen(8080, () => {
 });
 
 parallel([
-    (cb) => muas_node.createNode(io, cb),
-    (cb) => muas_node.createNode(io, cb),
     (cb) => muas_node.createNode(io, cb)
-
 
 ], (err, nodes) => {
     if (err) {
         throw err;
     }
 
-    let unverified_transaction_pool = new muas_unverfied_pool_node.MUAS_Unverified_Pool_Node(io);
-
+    let transaction_pool = new muas_unverfied_pool_node.MUAS_Unverified_Pool_Node(io);
     let node1 = nodes[0];
-    /**
-     setInterval(function() {
-    nodes.forEach(function(node) {
-      let transObj = {
-        id: Math.floor(Math.random() * Math.floor(100)),
-        value: 200
-      };
-      node.broadcast_add_unverified_transaction(transObj);
-    });
-    unverified_transaction_pool.print_pool();
 
-  }, 2000);
-
-
-     setInterval(function() {
-    nodes.forEach(function(node) {
-      node.broadcast_get_random_transaction();
-    });
-  }, 2000);
-     */
 
     setInterval(function () {
-        each(nodes, function (node) {
-            let transObj = {
-                id: Math.floor(Math.random() * Math.floor(100)),
-                value: 200
-            };
-            node.broadcast_add_unverified_transaction(transObj),
-                node.broadcast_get_random_transaction(),
-                node.broadcast_delete_verified_transaction(transObj)
-        }, function (err) {
-            console.log("err");
+        let transaction = {
+            "transactionHash": "hash256 " + Math.floor(Math.random() * Math.floor(100)),
+            "amount": Math.floor(Math.random() * Math.floor(1000))
+        }
+        node1.broadcast_add_verified_transaction_to_chain(transaction).then(function(transaction){
         });
-        unverified_transaction_pool.print_pool();
+
+        node1.broadcast_add_verified_transaction(transaction).then(function(transaction){
+        });
+
 
     }, 2000);
 
 
-    //  node1.broadcast_add_unverified_transaction(JSON.stringify({"id" : Math.floor(Math.random()*Math.floor(200))}));
-
-
-    /*
-
-      setInterval(function(){
-        let transaction = {"id":Math.floor(Math.random() * Math.floor(3000))};
-        console.log("adding >> ", transaction );
-        node1.broadcast_add_unverified_transaction(transaction);
-      },2000)
-
-
-    /*
-      setInterval(function(){
-        console.log('trying to fetch a random transaction');
-        node1.broadcast('/get_random_transaction',null);
-      },3000);
-
-      //  let node2 = nodes[1];
-      /*
-      setInterval(function(){
-        node1.broadcast('/echo/3.0.0', 'first broadcast from node 1');
-      },2500);
-
-
-      setInterval(function(){
-        console.log(unverified_transaction_pool.get_random_transaction());
-      },Math.floor(Math.random() * Math.floor(1000)));
-
-      setInterval(function(){
-        console.log(unverified_transaction_pool.add_transaction('new Transaction'));
-      },Math.floor(Math.random() * Math.floor(3000)));
-      */
 });
+
+
+function createValidTransaction() {
+    return new Promise(function (resolve) {
+        setTimeout(function () {
+            resolve({
+                "transactionHash": "hash256 " + Math.floor(Math.random() * Math.floor(100)),
+                "amount": Math.floor(Math.random() * Math.floor(1000))
+            });
+        }, Math.floor(Math.random() * Math.floor(2500)));
+    });
+}
+
+
