@@ -48,19 +48,19 @@ class Block {
         return SHA256(this.transaction + this.previousBlock + this.nonce).toString();
     }
 
-  getGenesisBlock() {
-    //the genesis block has 25 coins
-    var amountOfCoins = 25;
-    var input = null;
-    /**
-     * TODO: Figure out what we can put to pubKey for genesis block
-     */
-    var output = new Output("pubKey", amountOfCoins);
-    var transactionTemp = new Transaction(null, output);
-    var genesisBlock = new Block(transactionTemp, null);
+    getGenesisBlock() {
+        //the genesis block has 25 coins
+        var amountOfCoins = 25;
+        var input = null;
+        /**
+         * TODO: Figure out what we can put to pubKey for genesis block
+         */
+        var output = new Output("pubKey", amountOfCoins);
+        var transactionTemp = new Transaction(null, output);
+        var genesisBlock = new Block(transactionTemp, null);
 
-    return genesisBlock;
-  }
+        return genesisBlock;
+    }
 
 }
 
