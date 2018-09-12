@@ -9,6 +9,6 @@ var genesisBlock = testBlock.getGenesisBlock();
 var proofOfWork = new ProofOfWork();
 
 console.log(genesisBlock)
-var blockPow = proofOfWork.proofOfWork(genesisBlock.getNonce(), genesisBlock);
+var blockPow = proofOfWork.proofOfWork(genesisBlock);
 
-proofOfWork.validatePow(blockPow);
+console.log(proofOfWork.validatePow(blockPow));

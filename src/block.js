@@ -16,33 +16,29 @@ class Block {
     this.blockHash = null;
   }
 
-  getTransactions() {
+  get getTransactions() {
     return this.transaction;
   }
-  getPreviousHash() {
+  get getPreviousHash() {
     return this.previousHash;
   }
-  getNonce() {
+  get getNonce() {
     return this.nonce;
   }
-  getBlockHash() {
+  get getBlockHash() {
     return this.blockHash;
   }
 
-  setNonce(nonce) {
+  set setNonce(nonce) {
     if (this.nonce === 0) {
-      this.nonce = nonce;
+      this._nonce = nonce;
     }
   }
 
-  setBlockHash(hash) {
+  set setBlockHash(hash) {
     if (this.blockHash === null) {
-      this.blockHash = hash;
+      this._blockHash = hash;
     }
-  }
-
-  calculateHash() {
-    return SHA256(this.transaction + this.previousHash + this.nonce).toString();
   }
 
   getGenesisBlock() {
