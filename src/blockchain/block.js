@@ -17,7 +17,6 @@ class Block {
         this.blockHash = null;
     }
 
-<<<<<<< HEAD
   get getTransactions() {
     return this.transaction;
   }
@@ -32,39 +31,17 @@ class Block {
   }
 
   set setNonce(nonce) {
-    if (this.nonce === 0) {
-      this._nonce = nonce;
-=======
-    getTransactions() {
-        return this.transaction;
+        if (this.nonce === 0) {
+        this._nonce = nonce;
+        }
     }
 
-    getPreviousBlock() {
-        return this.previousBlock;
-    }
-
-    getNonce() {
-        return this.nonce;
-    }
-
-    getBlockHash() {
-        return this.blockHash;
->>>>>>> afc8ad71339d2b1f8ed79b3ef837406da2262471
-    }
-
-<<<<<<< HEAD
   set setBlockHash(hash) {
     if (this.blockHash === null) {
       this._blockHash = hash;
-=======
-    setNonce(nonce) {
-        if (this.nonce === 0) {
-            this.nonce = nonce;
-        }
->>>>>>> afc8ad71339d2b1f8ed79b3ef837406da2262471
     }
+  }
 
-<<<<<<< HEAD
   getGenesisBlock() {
     //the genesis block has 25 coins
     var amountOfCoins = 25;
@@ -75,22 +52,7 @@ class Block {
     var output = new Output("pubKey", amountOfCoins);
     var transactionTemp = new Transaction(null, output);
     var genesisBlock = new Block(transactionTemp, null);
-=======
-    setBlockHash(hash) {
-        if (this.blockHash === null) {
-            this.blockHash = hash;
-        }
-    }
-
-    calculateHash() {
-      var md = forge.md.sha256.create();
-      md.update(this.transaction + this.previousBlock + this.nonce);
-      return hash = md.digest().toHex();
-
-      //return SHA256(this.transaction + this.previousBlock + this.nonce).toString();
-    }
->>>>>>> afc8ad71339d2b1f8ed79b3ef837406da2262471
-
+  }
     getGenesisBlock() {
         //the genesis block has 25 coins
         var amountOfCoins = 25;
