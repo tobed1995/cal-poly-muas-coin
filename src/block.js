@@ -1,6 +1,7 @@
-const SHA256 = require('crypto-js/sha256');
+//const SHA256 = require('crypto-js/sha256');
 var Transaction = require('./transaction');
 var Output = require('./output');
+const forge = require('node-forge');
 
 class Block {
 
@@ -45,7 +46,11 @@ class Block {
     }
 
     calculateHash() {
-        return SHA256(this.transaction + this.previousBlock + this.nonce).toString();
+      var md = forge.md.sha256.create();
+      md.update(this.transaction + this.previousBlock + this.nonce);
+      return hash = md.digest().toHex();
+
+      //return SHA256(this.transaction + this.previousBlock + this.nonce).toString();
     }
 
     getGenesisBlock() {
