@@ -1,7 +1,5 @@
-//const SHA256 = require('crypto-js/sha256');
-var Transaction = require('./transaction/transaction');
-var Output = require('./transaction/output');
-const forge = require('node-forge');
+let Transaction = require('./transaction/transaction');
+let Output = require('./transaction/output');
 
 class Block {
 
@@ -45,18 +43,20 @@ class Block {
         }
     }
 
-    static getGenesisBlock(pubKey) {
-        //the genesis block has 25 coins
-        var amountOfCoins = 25;
-        var input = null;
-        /**
-         * TODO: Figure out what we can put to pubKey for genesis block
-         */
-        var output = new Output(pubKey, amountOfCoins);
-        var transactionTemp = new Transaction(null, output);
-        var genesisBlock = new Block(transactionTemp, null);
+    /**
+     * Generate Genesis block with initial 25 coins.
+     */
+    static getGenesisBlock(privKey, pubKey) {
+        let amountOfCoins = 25;
+        let input = null;
+        let output = new Output(pubKey, amountOfCoins);
 
-        return genesisBlock;
+        let genTransaction = new Transaction(input, output);
+
+        genTransaction.sign(privKey);
+        genTransaction.createTransactionHash();
+
+        return new Block(genTransaction, null);
     }
 
 }

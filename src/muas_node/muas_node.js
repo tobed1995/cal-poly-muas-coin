@@ -12,14 +12,15 @@ const defaultsDeep = require('@nodeutils/defaults-deep');
 const pull = require('pull-stream');
 const PeerId = require('peer-id');
 
-const TransactionValidator = require('../blockchain/transaction/transactionValidator')
-const Transaction = require('../blockchain/transaction/transaction')
-const p_o_w = require('../blockchain/pow')
-const Block = require('../blockchain/block')
-const logger = require('../logger/logger')
+const TransactionValidator = require('../blockchain/transaction/transactionValidator');
+const Transaction = require('../blockchain/transaction/transaction');
+const ProofOfWork = require('../blockchain/pow');
+const Block = require('../blockchain/block');
+const logger = require('../logger/logger');
 
-const forge = require('node-forge')
+const forge = require('node-forge');
 
+const pow = new ProofOfWork();
 
 class MUASNode extends libp2p {
     constructor(_options) {
@@ -137,7 +138,7 @@ class MUASNode extends libp2p {
 
     broadcast_get_random_transaction() {
         let self = this;
-        return new Promise(function(resolve){
+        return new Promise(function (resolve) {
             self.available_peers.forEach((peer) => {
                 self.dialProtocol(peer, '/get_random_transaction', (err, conn) => {
                     if (err) {
@@ -203,20 +204,19 @@ class MUASNode extends libp2p {
                 });
             });
         }
-
     }
 
 
-    verify_transaction(transaction,chain) {
+    verify_transaction(transaction, chain) {
         let validator = new TransactionValidator();
         let self = this;
-        return new Promise(function(resolve,reject){
-            transaction = Object.setPrototypeOf(transaction, Transaction.prototype)
-           let opCode = validator.verifyTransaction(transaction,chain);
-           logger.info('node id %s validating transactionHash %s',self.id,transaction.transactionHash);
-            if(opCode === 0 ){
+        return new Promise(function (resolve, reject) {
+            transaction = Object.setPrototypeOf(transaction, Transaction.prototype);
+            let opCode = validator.verifyTransaction(transaction, chain);
+            logger.info('node id %s validating transactionHash %s', self.id, transaction.transactionHash);
+            if (opCode === 0) {
                 resolve();
-            }else{
+            } else {
                 reject(opCode);
             }
         });
@@ -249,16 +249,24 @@ let createNode = function (io, callback, genesisBlock) {
                     peerInfo
                 });
                 let rsa = forge.pki.rsa;
-                let keypair = rsa.generateKeyPair({bits: 1024, e: 0x10001});
+                let keypair = rsa.generateKeyPair({bits: 512, e: 0x10001});
                 node.priv_sign_key = keypair.privateKey;
                 node.pub_sign_key = keypair.publicKey;
 
 
                 node.id = peerInfo.id.toB58String();
                 node.chain = [];
-                if(genesisBlock === null || typeof genesisBlock === 'undefined'){
-                    node.chain.push(Block.getGenesisBlock(node.priv_sign_key));
-                }else{
+                if (genesisBlock === null || typeof genesisBlock === 'undefined') {
+                    let genesisBlock1 = Block.getGenesisBlock(node.priv_sign_key, node.pub_sign_key);
+                    let pow = new ProofOfWork();
+                    let targetValue = '000FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF';
+
+                    do {
+                        pow.doPow(genesisBlock1, targetValue);
+                    } while (!pow.validatePow(genesisBlock1));
+
+                    node.chain.push(genesisBlock1);
+                } else {
                     node.chain.push(genesisBlock);
                 }
 
