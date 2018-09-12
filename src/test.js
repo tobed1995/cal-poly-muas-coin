@@ -1,7 +1,7 @@
 'use strict';
 
-const ProofOfWork = require('./pow');
-const Block = require('./block');
+const ProofOfWork = require('./blockchain/pow');
+const Block = require('./blockchain/block');
 
 
 var testBlock = new Block();

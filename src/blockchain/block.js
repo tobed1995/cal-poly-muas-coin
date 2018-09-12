@@ -1,6 +1,6 @@
 //const SHA256 = require('crypto-js/sha256');
-var Transaction = require('./transaction');
-var Output = require('./output');
+var Transaction = require('./transaction/transaction');
+var Output = require('./transaction/output');
 const forge = require('node-forge');
 
 class Block {

@@ -13,15 +13,13 @@ const series = require('async/series');
 const pull = require('pull-stream');
 
 const forge = require('node-forge');
-const Block = require('./block');
+const Block = require('./blockchain/block');
 
 const UnverifiedTransactionPool = require('./unverifiedTransactionPool');
-const Blockchain = require('./blockchain');
-const Transaction = require('./transaction');
-const Input = require('./input');
-const Output = require('./output');
-
-const MUASNode = require('./muasNode');
+const Blockchain = require('./blockchain/blockchain');
+const Transaction = require('./blockchain/transaction/transaction');
+const Input = require('./blockchain/transaction/input');
+const Output = require('./blockchain/transaction/output');
 
 let chain = new Blockchain();
 
