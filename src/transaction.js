@@ -39,9 +39,11 @@ class Transaction {
     this.signatures.push(signature);
   }
 
-  checkSign(publicKey) {
+/*
+  checkSign(publicKey)  The total number of coins in the input equals the number of coins in the output{
     return publicKey.verify(md.digest().bytes(), signature);
   }
+*/
 
   getInput() {
     return this.input;
