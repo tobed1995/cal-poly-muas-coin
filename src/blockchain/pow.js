@@ -1,6 +1,7 @@
 'use strict';
 
-const x11 = require('x11-hash-js');
+const x11 = require('@dashevo/x11-hash-js');
+const Block = require('./block');
 
 class ProofOfWork {
 
@@ -8,42 +9,34 @@ class ProofOfWork {
 
     }
 
-    proofOfWork(nonce, block) {
+    proofOfWork(block) {
         //not implemented because the showcase would take too much time
         //var targetValue = '00000FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF';
 
         //takes up to 5 - 30 seconds 
         var targetValue = '000FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF';
-
         var t0 = new Date();
-
-        while (true) {
-            var x11Hash = this.calculateX11Hash(nonce + block);
-            //console.log("x11Hash: " + x11Hash + "; targetValue: " + targetValue + "; true? " + (x11Hash < targetValue));
+        while(true) {
+            var x11Hash = this.calculateX11Hash(block.transaction + block.previousHash + block.nonce);
+            console.log("x11Hash: " + x11Hash + "; targetValue: " + targetValue + "; true? " + (x11Hash < targetValue));
             if (x11Hash < targetValue) {
                 var t1 = new Date();
-                console.log("BLOCK MINED IN: " + (t1 - t0) + " milliseconds. Hash of mined block " + x11Hash + " Nonce of mined block: " + nonce);
-                //set nonce and hash to block
-                block.setNonce(nonce);
-                block.setBlockHash(x11Hash);
+                console.log("BLOCK MINED IN: " + (t1 - t0) + " milliseconds. Hash of mined block " + x11Hash + " Nonce of mined block: " + block.nonce);
+                //set hash to block
+                block.blockHash = x11Hash;
                 return block;
             }
-
-            nonce++
+            var nonceInc = block.nonce + 1;
+            block.nonce = nonceInc;
         }
     }
 
     validatePow(block) {
-
-        var nonceOfBlock = block.getNonce();
-
-        var hashOfBlock = block.getBlockHash();
-
-        var x11HashBlock = this.calculateX11Hash(nonceOfBlock + block);
-
-        console.log(block);
-
-        if (hashOfBlock === x11HashBlock) {
+        var hashOfBlock = block.getBlockHash;
+        console.log("Hash of block: " + hashOfBlock);
+        var x11HashBlock = this.calculateX11Hash(block.transaction + block.previousHash + block.nonce);
+        console.log("X11 hash of block: " + x11HashBlock);
+        if(hashOfBlock === x11HashBlock) {
             return true;
         } else {
             return false;
