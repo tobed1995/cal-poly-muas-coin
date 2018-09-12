@@ -7,6 +7,7 @@ const SECIO = require('libp2p-secio');
 const PeerInfo = require('peer-info');
 const MulticastDNS = require('libp2p-mdns');
 const waterfall = require('async/waterfall');
+const parallel = require('async/parallel');
 const defaultsDeep = require('@nodeutils/defaults-deep');
 const pull = require('pull-stream');
 const PeerId = require('peer-id');
@@ -90,7 +91,6 @@ class MUASNode extends libp2p {
                 if (err) {
                     return
                 }
-
                 pull(
                     conn,
                     pull.collect(function (err, transaction) {
@@ -126,7 +126,6 @@ class MUASNode extends libp2p {
             });
             resolve(transaction);
         });
-
     }
 
 
@@ -144,6 +143,7 @@ class MUASNode extends libp2p {
                             let transObj = JSON.parse(transaction.join(''));
                             //start working on transaction verification --> stub it by now.
                             if (self.verify_transaction(transObj)) {
+                                //broadcast message to the verified pool
                                 self.broadcast_add_verified_transaction(transObj);
                             } else {
                                 self.broadcast_delete_unverified_transaction(transObj);
@@ -172,7 +172,6 @@ class MUASNode extends libp2p {
                 });
             });
         }
-
     }
 
     broadcast_delete_verified_transaction(transaction) {
