@@ -30,7 +30,7 @@ class Block {
   }
 
   setNonce(nonce) {
-    if (this.nonce === null) {
+    if (this.nonce === 0) {
       this.nonce = nonce;
     }
   }
