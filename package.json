@@ -4,7 +4,7 @@
   "description": "a small p2p networking project",
   "main": "src/main/index.js",
   "scripts": {
-    "test": "./node_modules/.bin/jasmine-node spec",
+    "test": "./node_modules/.bin/jasmine-node spec"
   },
   "author": "CalPoly & MUAS Students",
   "license": "ISC",
