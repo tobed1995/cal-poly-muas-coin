@@ -1,30 +1,30 @@
-const Transaction = require('./transaction')
+const Transaction = require('./transaction');
 
 class VerifiedTransactionPool {
 
-  constructor() {
-      this.transArray = [];
-  }
-
-  pushTransaction(transaction) {
-    if (transaction === undefined || transaction === null) {
-      return false;
+    constructor() {
+        this.transArray = [];
     }
 
-    this.transArray.push(transaction);
-    console.log('Push new length: ' + this.transArray.length);
-    return true;
-  }
+    pushTransaction(transaction) {
+        if (transaction === undefined || transaction === null) {
+            return false;
+        }
 
-  getNextTransaction() {
-    if (this.transArray.length < 1) return null;
+        this.transArray.push(transaction);
+        console.log('Push new length: ' + this.transArray.length);
+        return true;
+    }
 
-    return this.transArray.splice(0,1)[0];
-  }
+    getNextTransaction() {
+        if (this.transArray.length < 1) return null;
 
-  getCurrentPoolSize() {
-      return this.transArray.length;
-  }
+        return this.transArray.splice(0, 1)[0];
+    }
+
+    getCurrentPoolSize() {
+        return this.transArray.length;
+    }
 }
 
-module.exports = VerifiedTransactionPool
+module.exports = VerifiedTransactionPool;
