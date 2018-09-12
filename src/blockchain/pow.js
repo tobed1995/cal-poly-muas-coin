@@ -1,6 +1,6 @@
 'use strict';
 
-const x11 = require('@dashevo/x11-hash-js');
+const x11 = require('x11-hash-js');
 const Block = require('./block');
 
 class ProofOfWork {

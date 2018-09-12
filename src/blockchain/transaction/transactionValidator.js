@@ -1,4 +1,4 @@
-import {VerifyErrorCode} from "./verificationErrorCodes";
+const VerifyErrorCode = require("./verificationErrorCodes");
 
 class TransactionValidator {
 
