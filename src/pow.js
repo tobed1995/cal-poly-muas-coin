@@ -41,9 +41,9 @@ class ProofOfWork {
 
         var x11HashBlock = this.calculateX11Hash(nonceOfBlock + block);
 
-        console.log(block)
+        console.log(block);
 
-        if(hashOfBlock === x11HashBlock) {
+        if (hashOfBlock === x11HashBlock) {
             return true;
         } else {
             return false;
