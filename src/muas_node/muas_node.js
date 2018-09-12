@@ -12,7 +12,7 @@ const defaultsDeep = require('@nodeutils/defaults-deep');
 const pull = require('pull-stream');
 const PeerId = require('peer-id');
 
-const p_o_w = require('../blockchain/pow')
+const p_o_w = require('../blockchain/pow');
 
 
 class MUASNode extends libp2p {

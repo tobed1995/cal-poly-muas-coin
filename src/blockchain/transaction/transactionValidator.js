@@ -1,3 +1,5 @@
+import {VerifyErrorCode} from "./verificationErrorCodes";
+
 class TransactionValidator {
 
     /*
@@ -12,40 +14,40 @@ class TransactionValidator {
 
         if (!this.isTransactionHashValid(transaction)) {
             console.error('Transaction hash is empty or invalid.');
-            return false;
+            return VerifyErrorCode.HASH_FAULT;
         }
 
         if (!this.isTransactionSignaturesCountLessOrEqualsInputs(transaction)) {
             console.error('Transaction inputs not matching with number of signatures.');
-            return false;
+            return VerifyErrorCode.TOO_MANY_SIGNATURES;
         }
 
         if (!this.areSignaturesValid(transaction)) {
             console.error('Transaction signatures are invalid.');
-            return false;
+            return VerifyErrorCode.SIGNATURES_INVALID;
         }
 
         if (!this.areTransactionInputsValid(transaction)) {
             // Errormessage will be logged in method itself, if anything occurs.
-            return false;
+            return VerifyErrorCode.INPUTS_INVALID;
         }
 
         if (!this.isCoinInputEqualsOutput(transaction)) {
             console.error('Transaction Input and Output amount not equal.');
-            return false;
+            return VerifyErrorCode.COIN_INBALANCE;
         }
 
         if (!this.isTransactionNotInChainYet(transaction)) {
             console.error('Transaction already in chain!');
-            return false;
+            return VerifyErrorCode.ALREADY_IN_CHAIN;
         }
 
         if (!this.areTransactionInputsUnique(transaction)) {
             console.error('Transaction uses same input more than once.');
-            return false;
+            return VerifyErrorCode.DUPLICATE_INPUT;
         }
 
-        return true;
+        return VerifyErrorCode.OK;
     }
 
 
