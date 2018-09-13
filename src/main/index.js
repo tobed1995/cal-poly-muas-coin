@@ -10,7 +10,7 @@ const pull = require('pull-stream');
 const Transaction = require('../blockchain/transaction/transaction');
 const Input = require('../blockchain/transaction/input');
 const Output = require('../blockchain/transaction/output');
-const TransactionValidator = require('../blockchain/transaction/transactionValidator')
+const TransactionValidator = require('../blockchain/transaction/transactionValidator');
 const forge = require('node-forge');
 const Block = require('../blockchain/block');
 
@@ -19,7 +19,7 @@ const app = require('express')();
 const http = require('http').Server(app);
 const io = require('socket.io')(http);
 
-const logger = require('../logger/logger')
+const logger = require('../logger/logger');
 
 // Declare static folder to be served. It contains the js, images, css, etc.
 app.use(require('express').static(path.join(__dirname, '..', 'visualization')));
@@ -33,40 +33,40 @@ http.listen(8080, () => {
 
 parallel([
     (cb) => muas_node.createNode(io, cb, null)
-
 ], (err, nodes) => {
     if (err) {
         throw err;
     }
     let node1 = nodes[0];
-    let transaction_pool = new muas_unverfied_pool_node.MUAS_Unverified_Pool_Node(io, node1.chain[0]);
+    let genesisBlock = node1.chain[0];
+
+    let transaction_pool = new muas_unverfied_pool_node.MUAS_Unverified_Pool_Node(io, genesisBlock);
 
     parallel([
-        (cb) => muas_node.createNode(io, cb, node1.chain[0]),
-        (cb) => muas_node.createNode(io, cb, node1.chain[0]),
-        (cb) => muas_node.createNode(io, cb, node1.chain[0]),
-        (cb) => muas_node.createNode(io, cb, node1.chain[0])
+        (cb) => muas_node.createNode(io, cb, genesisBlock)
     ], (err, nodes) => {
 
         let input = [];
         let output = [];
-//
-        input.push(new Input('0xblub', 4));
-        output.push(new Output('234', 4));
+
+        let genTrans = genesisBlock.transaction[0];
+
+        input.push(new Input(genTrans.transactionHash, 0));
+        output.push(new Output(null, 4));
+        output.push(new Output(node1.pub_sign_key, 21));
 
         let transaction = new Transaction(input, output);
         transaction.sign(node1.priv_sign_key);
         transaction.createTransactionHash();
 
-
         setInterval(function () {
-
             node1.broadcast_add_unverified_transaction(transaction);
 
             node1.broadcast_get_random_transaction().then(function (transaction) {
                 logger.info('fetched trans');
                 node1.verify_transaction(transaction, node1.chain).then(function () {
                     logger.info('validated transaction');
+                    nodes.broadcast_add_verified_transaction(transaction);
                 }).catch(function (opCode) {
                     logger.info('failed validation with opCode %s', opCode);
                     //verification failed ... aborting
@@ -96,8 +96,6 @@ parallel([
 
         }, 2000);
     });
-
-
 });
 
 

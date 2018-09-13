@@ -1,6 +1,6 @@
 const VerifyErrorCode = require("./verificationErrorCodes");
 
-const forge = require('node-forge')
+const forge = require('node-forge');
 
 class TransactionValidator {
 
@@ -65,7 +65,7 @@ class TransactionValidator {
             return false;
         }
         let md = forge.md.sha256.create();
-        return hash === md.update(transaction.data + transaction.signatures).digest().toHex();
+        return hash === md.update(JSON.stringify(transaction.data) + JSON.stringify(transaction.signatures)).digest().toHex();
     }
 
     isTransactionSignaturesCountLessOrEqualsInputs(transaction) {
@@ -84,12 +84,12 @@ class TransactionValidator {
                 return false;
             }
         }
-        return false;
+        return true;
     }
 
     areSignaturesValid(transaction, chain) {
         let md = forge.md.sha256.create();
-        md.update(transaction.data, 'utf8');
+        md.update(JSON.stringify(transaction.data), 'utf8');
 
         for (let index = 0; index < transaction.getInput().length; index++) {
             let singleInputItem = transaction.getInput()[index];
@@ -131,6 +131,7 @@ class TransactionValidator {
                 return false;
             }
         }
+        return true;
     }
 
     isTransactionOutputNotUsedYet(transaction, outputIndex, chain) {
@@ -159,8 +160,8 @@ class TransactionValidator {
     isCoinInputEqualsOutput(transaction, chain) {
         let transOutputSum = 0; // sum of output coins of this transaction.
         let transInputSum = 0; // sum of input coins of this transaction.
-        transaction.getOutput().forEach(function (item) {
-            transOutputSum += item.getAmount();
+        transaction.data.output.forEach(function (item) {
+            transOutputSum += item.amount;
         });
         for (let index = 0; index < transaction.getInput().length; index++) {
             let item = transaction.getInput()[index];
@@ -173,7 +174,7 @@ class TransactionValidator {
     }
 
     isTransactionNotInChainYet(transaction, chain) {
-        return this.getTransactionByHash(transaction.getTransactionHash(), chain) !== null;
+        return this.getTransactionByHash(transaction.getTransactionHash(), chain) === null;
     }
 
     areTransactionInputsUnique(transaction) {
@@ -207,7 +208,7 @@ class TransactionValidator {
             for (let index2 = 0; index2 < singleBlock.transaction.length; index2++) {
                 let singleTrans = singleBlock.transaction[index2];
 
-                if (singleTrans.getTransactionHash() === transactionHash) {
+                if (singleTrans.transactionHash === transactionHash) {
                     return singleTrans;
                 }
             }

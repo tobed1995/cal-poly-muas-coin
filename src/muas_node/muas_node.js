@@ -147,7 +147,7 @@ class MUASNode extends libp2p {
                     pull(
                         conn,
                         pull.collect(function (err, transaction) {
-                            if (transaction !== null && typeof transaction !== 'undefined' && transaction.length > 0) {
+                            if (transaction !== null && typeof transaction !== 'undefined' && transaction.length > 0 && JSON.parse(transaction.join('')) !== null) {
                                 let transObj = JSON.parse(transaction.join(''));
                                 resolve(transObj);
                                 //start working on transaction verification --> stub it by now.
@@ -257,6 +257,7 @@ let createNode = function (io, callback, genesisBlock) {
                 node.id = peerInfo.id.toB58String();
                 node.chain = [];
                 if (genesisBlock === null || typeof genesisBlock === 'undefined') {
+                    console.log("Node " + node.id + " generate genesis");
                     let genesisBlock1 = Block.getGenesisBlock(node.priv_sign_key, node.pub_sign_key);
                     let pow = new ProofOfWork();
                     let targetValue = '000FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF';

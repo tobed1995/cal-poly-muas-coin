@@ -13,12 +13,12 @@ const pull = require('pull-stream');
 const PeerId = require('peer-id');
 const muas_node = require('../muas_node/muas_node');
 
-const logger = require('../logger/logger')
+const logger = require('../logger/logger');
 
 
 class MUAS_Unverified_Pool_Node {
 
-    constructor(io,genesisBlock) {
+    constructor(io, genesisBlock) {
         let self = this;
 
         muas_node.createNode(io, function (err, node) {
@@ -42,16 +42,16 @@ class MUAS_Unverified_Pool_Node {
                 )
             });
 
-            self.node.handle('/add_verified_transaction_to_chain', function(protocol,conn){
-               pull(
-                   conn,
-                   pull.collect(function(err, transaction){
-                     if(err){
-                         throw err;
-                     }
-                     self.add_verified_transaction_to_chain(transaction);
-                   })
-               )
+            self.node.handle('/add_verified_transaction_to_chain', function (protocol, conn) {
+                pull(
+                    conn,
+                    pull.collect(function (err, transaction) {
+                        if (err) {
+                            throw err;
+                        }
+                        self.add_verified_transaction_to_chain(transaction);
+                    })
+                )
             });
 
             self.node.handle('/add_verified_transaction', function (protocol, conn) {
@@ -98,7 +98,7 @@ class MUAS_Unverified_Pool_Node {
                 )
             });
 
-        },genesisBlock);
+        }, genesisBlock);
     }
 
     print_pool() {
@@ -113,8 +113,8 @@ class MUAS_Unverified_Pool_Node {
         }
     }
 
-    print_chain(){
-        if(this.chain !== null && typeof this.chain !== 'undefined'){
+    print_chain() {
+        if (this.chain !== null && typeof this.chain !== 'undefined') {
             console.log(this.chain);
         }
     }
@@ -122,6 +122,7 @@ class MUAS_Unverified_Pool_Node {
     add_unverified_transaction(transaction) {
 
         transaction = JSON.parse(transaction.join(''));
+
         if (this.pool !== null && typeof this.pool !== "undefined" && !this.idSet.has(transaction.transactionHash)) {
             this.pool.push(transaction);
             this.idSet.add(transaction.transactionHash);
@@ -131,13 +132,13 @@ class MUAS_Unverified_Pool_Node {
     }
 
     // TODO need to be implemented w/o stub!!!!
-    add_verified_transaction_to_chain(transaction){
+    add_verified_transaction_to_chain(transaction) {
         transaction = JSON.parse(transaction.toString());
-        if(this.chain !== null && typeof this.chain !== 'undefined'){
+        if (this.chain !== null && typeof this.chain !== 'undefined') {
             //check validity of chain --> resolve branches && broadcast if added to my own chain.
             //if
             this.chain.push(transaction);
-            logger.info('node id %s added transaction: %s to chain', this.node.id,transaction.transactionHash);
+            logger.info('node id %s added transaction: %s to chain', this.node.id, transaction.transactionHash);
 
 
         }
@@ -148,7 +149,7 @@ class MUAS_Unverified_Pool_Node {
         if (this.verified_pool !== null && typeof this.verified_pool !== "undefined" && !this.idSetVerified.has(transaction.transactionHash)) {
             this.verified_pool.push(transaction);
             this.idSetVerified.add(transaction.transactionHash);
-            logger.info('node id %s added transaction: %s to verified_pool', this.node.id,transaction.transactionHash);
+            logger.info('node id %s added transaction: %s to verified_pool', this.node.id, transaction.transactionHash);
         }
     }
 
@@ -158,11 +159,11 @@ class MUAS_Unverified_Pool_Node {
             for (let i = 0; i < this.pool.length; i++) {
                 if (this.pool[i].transactionHash === transaction.transactionHash) {
                     this.pool.splice(i, 1);
-                    logger.info('node id %s deleted transaction: %s from unverified_pool', this.node.id,transaction.transactionHash);
+                    logger.info('node id %s deleted transaction: %s from unverified_pool', this.node.id, transaction.transactionHash);
                 }
             }
-        }else{
-            logger.warn('transaction: %s in node ids %s unverified_pool is already deleted or not found',transaction.transactionHash,this.node.id);
+        } else {
+            logger.warn('transaction: %s in node ids %s unverified_pool is already deleted or not found', transaction.transactionHash, this.node.id);
 
         }
     }
@@ -173,11 +174,11 @@ class MUAS_Unverified_Pool_Node {
             for (let i = 0; i < this.verified_pool.length; i++) {
                 if (this.verified_pool[i].transactionHash === transaction.transactionHash) {
                     this.verified_pool.splice(i, 1);
-                    logger.info('node id %s deleted transaction: %s from verified_pool', this.node.id,transaction.transactionHash);
+                    logger.info('node id %s deleted transaction: %s from verified_pool', this.node.id, transaction.transactionHash);
                 }
             }
-        }else{
-            logger.warn('transaction: %s in node ids %s verified_pool is already deleted or not found',transaction.transactionHash,this.node.id);
+        } else {
+            logger.warn('transaction: %s in node ids %s verified_pool is already deleted or not found', transaction.transactionHash, this.node.id);
         }
     }
 

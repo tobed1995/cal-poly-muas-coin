@@ -21,19 +21,20 @@ class Transaction {
     }
 
     createTransactionHash() {
-        var md = forge.md.sha256.create();
-        md.update(this.data + this.signatures);
+        const md = forge.md.sha256.create();
+
+        md.update(JSON.stringify(this.data) + JSON.stringify(this.signatures));
         //console.log(md.digest().toHex());
         this.transactionHash = md.digest().toHex();
     }
 
     // Signs the data part of the Transaction
     sign(privateKey) {
-        var md = forge.md.sha256.create();
-        md.update(this.data, 'utf8');
+        const md = forge.md.sha256.create();
+        md.update(JSON.stringify(this.data), 'utf8');
         //console.log(md.digest().toHex());
 
-        var signature = privateKey.sign(md);
+        let signature = privateKey.sign(md);
         this.signatures.push(signature);
     }
 
