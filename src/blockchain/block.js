@@ -10,7 +10,7 @@ class Block {
             this.transaction = [];
             this.transaction.push(transaction);
         }
-        this.previousBlock = previousBlock;
+        this.previousHash = previousBlock;
         this.nonce = 0;
         this.blockHash = null;
     }
@@ -33,13 +33,13 @@ class Block {
 
     set setNonce(nonce) {
         if (this.nonce === 0) {
-            this._nonce = nonce;
+            this.nonce = nonce;
         }
     }
 
     set setBlockHash(hash) {
         if (this.blockHash === null) {
-            this._blockHash = hash;
+            this.blockHash = hash;
         }
     }
 
