@@ -22,7 +22,7 @@ class ProofOfWork {
         let t0 = new Date();
 
         while (true) {
-            let x11Hash = this.calculateX11Hash(block.transaction + block.previousHash + block.nonce);
+            let x11Hash = this.calculateX11Hash(JSON.stringify(block.transaction) + block.previousHash + block.nonce);
             // console.log("x11Hash: " + x11Hash + "; targetValue: " + targetValue + "; true? " + (x11Hash < targetValue));
             if (x11Hash < targetValue) {
                 let t1 = new Date();
@@ -36,9 +36,9 @@ class ProofOfWork {
     }
 
     validatePow(block) {
-        let hashOfBlock = block.getBlockHash;
+        let hashOfBlock = block.blockHash;
         // console.log("Hash of block: " + hashOfBlock);
-        let x11HashBlock = this.calculateX11Hash(block.transaction + block.previousHash + block.nonce);
+        let x11HashBlock = this.calculateX11Hash(JSON.stringify(block.transaction) + block.previousHash + block.nonce);
         // console.log("X11 hash of block: " + x11HashBlock);
         return hashOfBlock === x11HashBlock;
     }

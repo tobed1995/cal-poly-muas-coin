@@ -56,9 +56,6 @@ create_muas_node(io, null).then(function (n1) {
 
     Promise.all([pool, n2, n3, n4, n5]).then(function (nodes) {
 
-        nodes.forEach((node) => {
-            console.log('chain length' + node.chain.length);
-        });
 
         n1.broadcast_add_unverified_transaction(transaction).then(function (transaction) {
             setInterval(function () {

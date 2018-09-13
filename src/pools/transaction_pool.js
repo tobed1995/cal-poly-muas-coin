@@ -12,7 +12,7 @@ const defaultsDeep = require('@nodeutils/defaults-deep');
 const pull = require('pull-stream');
 const PeerId = require('peer-id');
 const muas_node = require('../muas_node/muas_node');
-
+const ProofOfWork = require('../blockchain/pow')
 const logger = require('../logger/logger')
 
 
@@ -130,21 +130,37 @@ class MUAS_Unverified_Pool_Node {
         if (this.pool !== null && typeof this.pool !== "undefined" && !this.idSet.has(transaction.transactionHash)) {
             this.pool.push(transaction);
             this.idSet.add(transaction.transactionHash);
-            logger.info('added {' + transaction.transactionHash + '} to unverified_pool');
-
+            logger.info('added transactionHash %s to unverified_pool',transaction.transactionHash);
+        }else{
+            logger.warn('transactionHash %s already in unverified pool or pool not initialized', transaction.transactionHash);
         }
+
     }
 
+
+
     // TODO need to be implemented w/o stub!!!!
-    add_verified_transaction_to_chain(transaction) {
-        transaction = JSON.parse(transaction.toString());
-        if (this.chain !== null && typeof this.chain !== 'undefined') {
+    add_verified_transaction_to_chain(block) {
+
+        block = JSON.parse(block.toString());
+        if (this.chain !== null && typeof this.chain !== 'undefined' && !this.idSetVerified.has(block.transaction[0].transactionHash)) {
             //check validity of chain --> resolve branches && broadcast if added to my own chain.
-            //if
-            this.chain.push(transaction);
-            logger.info('node id %s added transaction: %s to chain', this.node.id, transaction.transactionHash);
+            //TODO: add check if block is valid. if yes add to own block --> else not.
+            let pow = new ProofOfWork();
+            if(pow.validatePow(block)){
+                logger.info('block %s is valid. adding to chain', block.blockHash);
+                this.chain.push(block);
+                this.idSetVerified.add(block.transaction[0].transactionHash);
+                this.delete_unverified_transaction(JSON.stringify(block.transaction[0]));
+            }else{
+                logger.warn('block %s is not valid. not adding to chain', block.blockHash);
+            }
 
 
+
+            logger.info('node id %s added block: %s to chain', this.node.id, block.transaction[0].transactionHash);
+        }else{
+            logger.info('node id %s refused to add block %s to chain', this.node.id, block.transaction[0].transactionHash);
         }
     }
 
