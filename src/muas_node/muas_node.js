@@ -49,23 +49,27 @@ class MUASNode extends libp2p {
     }
 
     broadcast_add_unverified_transaction(transaction) {
+        logger.info('adding transaction %s ', transaction);
         let self = this;
-        if (transaction !== null && typeof transaction !== 'undefined') {
-            self.available_peers.forEach(function (peer) {
-                self.dialProtocol(peer, '/add_unverified_transaction', function (err, conn) {
-                    if (err) {
-                        return
-                    }
-                    pull(
-                        pull.values([JSON.stringify(transaction)]),
-                        conn
-                    )
+        return new Promise(function (resolve, reject) {
+            if (transaction !== null && typeof transaction !== 'undefined') {
+                self.available_peers.forEach(function (peer) {
+                    self.dialProtocol(peer, '/add_unverified_transaction', function (err, conn) {
+                        if (err) {
+                            return
+                        }
+                        pull(
+                            pull.values([JSON.stringify(transaction)]),
+                            conn
+                        )
 
+                    });
                 });
-            });
+                resolve(transaction);
+            }
+            reject(transaction);
+        });
 
-        } else {
-        }
     }
 
     broadcast_add_verified_transaction(transaction) {
@@ -93,7 +97,7 @@ class MUASNode extends libp2p {
 
     broadcast_get_verified_transaction() {
         let self = this;
-        return new Promise(function(resolve,reject){
+        return new Promise(function (resolve, reject) {
             self.available_peers.forEach((peer) => {
                 self.dialProtocol(peer, '/get_verified_transaction', (err, conn) => {
                     if (err) {
@@ -162,7 +166,6 @@ class MUASNode extends libp2p {
                 });
             });
         });
-
     }
 
     broadcast_delete_unverified_transaction(transaction) {
@@ -218,8 +221,10 @@ class MUASNode extends libp2p {
             let opCode = validator.verifyTransaction(transaction, chain);
             logger.info('node id %s validating transactionHash %s', self.id, transaction.transactionHash);
             if (opCode === 0) {
+                logger.info('node id %s validated transactionHash %s successfully', self.id, transaction.transactionHash);
                 resolve();
             } else {
+                logger.info('node id %s failed to validata transactionHash %s', self.id, transaction.transactionHash);
                 reject(opCode);
             }
         });
@@ -228,6 +233,7 @@ class MUASNode extends libp2p {
     proof_of_work(transaction) {
         return true;
     }
+
 }
 
 

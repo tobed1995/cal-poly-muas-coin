@@ -15,8 +15,6 @@ class TransactionValidator {
     */
     verifyTransaction(transaction, chain) {
 
-        logger.error('Start validation of transaction %s', transaction.getTransactionHash());
-
         if (!this.isTransactionHashValid(transaction)) {
             logger.error('Transaction hash is empty or invalid.');
             return VerifyErrorCode.HASH_FAULT;
