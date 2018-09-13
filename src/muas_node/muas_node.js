@@ -93,26 +93,28 @@ class MUASNode extends libp2p {
 
     broadcast_get_verified_transaction() {
         let self = this;
-        self.available_peers.forEach((peer) => {
-            self.dialProtocol(peer, '/get_verified_transaction', (err, conn) => {
-                if (err) {
-                    return
-                }
-                pull(
-                    conn,
-                    pull.collect(function (err, transaction) {
-                        if (transaction !== null, typeof transaction !== 'undefined' && transaction.length > 0) {
-                            let transObj = JSON.parse(transaction.join(''));
-                            //start calculating proof_of_work
-                            let p_o_w = self.proof_of_work(transObj).then(function (transObj) {
-                                console.log('calculated proof of work -> success\n' + JSON.stringify(transObj));
-                                //add to chain
-                                self.broadcast_add_verified_transaction_to_chain(transObj);
-                            });
+        return new Promise(function(resolve,reject){
+            self.available_peers.forEach((peer) => {
+                self.dialProtocol(peer, '/get_verified_transaction', (err, conn) => {
+                    if (err) {
+                        return
+                    }
+                    pull(
+                        conn,
+                        pull.collect(function (err, transaction) {
+                            if (transaction !== null, typeof transaction !== 'undefined' && transaction.length > 0) {
+                                let transObj = JSON.parse(transaction.join(''));
+                                //start calculating proof_of_work
+                                let p_o_w = self.proof_of_work(transObj).then(function (transObj) {
+                                    console.log('calculated proof of work -> success\n' + JSON.stringify(transObj));
+                                    //add to chain
+                                    self.broadcast_add_verified_transaction_to_chain(transObj);
+                                });
 
-                        }
-                    })
-                )
+                            }
+                        })
+                    )
+                });
             });
         });
     }
@@ -147,20 +149,11 @@ class MUASNode extends libp2p {
                     pull(
                         conn,
                         pull.collect(function (err, transaction) {
-                            if (transaction !== null && typeof transaction !== 'undefined' && transaction.length > 0) {
+                            if (transaction !== null && typeof transaction !== 'undefined' && transaction.length > 0 && JSON.parse(transaction.join('')) !== null) {
                                 let transObj = JSON.parse(transaction.join(''));
                                 resolve(transObj);
                                 //start working on transaction verification --> stub it by now.
-                                /*
-                                if (self.verify_transaction(transObj)) {
-                                    //broadcast message to the verified pool
-                                    self.broadcast_add_verified_transaction(transObj);
-                                } else {
-                                    // if signature faked -> delete
-                                    // if just not valid -> return to pool
-                                    self.broadcast_delete_unverified_transaction(transObj);
-                                }
-                                */
+
                             } else {
                                 //not generated yet --> add handling here ?!?
                             }
@@ -174,36 +167,46 @@ class MUASNode extends libp2p {
 
     broadcast_delete_unverified_transaction(transaction) {
         let self = this;
-        if (transaction !== null && typeof transaction !== 'undefined') {
-            self.available_peers.forEach(function (peer) {
-                self.dialProtocol(peer, '/delete_unverified_transaction', function (err, conn) {
-                    if (err) {
-                        return
-                    }
-                    pull(
-                        pull.values([JSON.stringify(transaction)]),
-                        conn
-                    )
+        return new Promise(function (resolve, reject) {
+            if (transaction !== null && typeof transaction !== 'undefined') {
+                self.available_peers.forEach(function (peer) {
+                    self.dialProtocol(peer, '/delete_unverified_transaction', function (err, conn) {
+                        if (err) {
+                            return
+                        }
+                        pull(
+                            pull.values([JSON.stringify(transaction)]),
+                            conn
+                        )
+                    });
                 });
-            });
-        }
+                resolve(transaction);
+            }
+            reject(transaction);
+        });
     }
 
     broadcast_delete_verified_transaction(transaction) {
         let self = this;
-        if (transaction !== null && typeof transaction !== 'undefined') {
-            self.available_peers.forEach(function (peer) {
-                self.dialProtocol(peer, '/delete_verified_transaction', function (err, conn) {
-                    if (err) {
-                        return
-                    }
-                    pull(
-                        pull.values([JSON.stringify(transaction)]),
-                        conn
-                    )
+        return new Promise(function (resolve, reject) {
+            if (transaction !== null && typeof transaction !== 'undefined') {
+                self.available_peers.forEach(function (peer) {
+                    self.dialProtocol(peer, '/delete_verified_transaction', function (err, conn) {
+                        if (err) {
+                            return
+                        }
+                        pull(
+                            pull.values([JSON.stringify(transaction)]),
+                            conn
+                        )
+                    });
                 });
-            });
-        }
+                resolve(transaction);
+            }
+            reject(transaction);
+
+        });
+
     }
 
 
@@ -223,16 +226,12 @@ class MUASNode extends libp2p {
     }
 
     proof_of_work(transaction) {
-        return new Promise(function (resolve) {
-            //do stuff here
-            transaction.p_o_w = 'proof_of_work_d13d';
-            resolve(transaction);
-        });
+        return true;
     }
 }
 
 
-let createNode = function (io, callback, genesisBlock) {
+let createNode = function (io, genesisBlock, callback) {
     let node;
     PeerId.create({
         bits: 1024
@@ -257,9 +256,10 @@ let createNode = function (io, callback, genesisBlock) {
                 node.id = peerInfo.id.toB58String();
                 node.chain = [];
                 if (genesisBlock === null || typeof genesisBlock === 'undefined') {
+                    console.log("Node " + node.id + " generate genesis");
                     let genesisBlock1 = Block.getGenesisBlock(node.priv_sign_key, node.pub_sign_key);
                     let pow = new ProofOfWork();
-                    let targetValue = '000FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF';
+                    let targetValue = '0FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF';
 
                     do {
                         pow.doPow(genesisBlock1, targetValue);
@@ -283,6 +283,7 @@ let createNode = function (io, callback, genesisBlock) {
                     }
                 });
                 node.start(cb);
+                logger.info('node with id %s started', node.id);
             }
         ], (err) => callback(err, node))
     });
