@@ -2,6 +2,8 @@ const VerifyErrorCode = require("./verificationErrorCodes");
 
 const forge = require('node-forge');
 
+const logger = require('../../logger/logger')
+
 class TransactionValidator {
 
     /*
@@ -12,25 +14,26 @@ class TransactionValidator {
      - The total number of coins in the input equals the number of coins in the output
     */
     verifyTransaction(transaction, chain) {
-        console.log('Start validation of transaction ' + transaction.getTransactionHash());
+
+        logger.error('Start validation of transaction %s', transaction.getTransactionHash());
 
         if (!this.isTransactionHashValid(transaction)) {
-            console.error('Transaction hash is empty or invalid.');
+            logger.error('Transaction hash is empty or invalid.');
             return VerifyErrorCode.HASH_FAULT;
         }
 
         if (!this.isTransactionSignaturesCountLessOrEqualsInputs(transaction)) {
-            console.error('Transaction inputs not matching with number of signatures.');
+            logger.error('Transaction inputs not matching with number of signatures.');
             return VerifyErrorCode.TOO_MANY_SIGNATURES;
         }
 
         if (!this.areOutputsInChain(transaction, chain)) {
-            console.error('Referenced Output is not in chain');
+            logger.error('Referenced Output is not in chain');
             return VerifyErrorCode.INPUT_NOT_EXISTS;
         }
 
         if (!this.areSignaturesValid(transaction, chain)) {
-            console.error('Transaction signatures are invalid.');
+            logger.error('Transaction signatures are invalid.');
             return VerifyErrorCode.SIGNATURES_INVALID;
         }
 
@@ -40,17 +43,17 @@ class TransactionValidator {
         }
 
         if (!this.isCoinInputEqualsOutput(transaction, chain)) {
-            console.error('Transaction Input and Output amount not equal.');
+            logger.error('Transaction Input and Output amount not equal.');
             return VerifyErrorCode.COIN_INBALANCE;
         }
 
         if (!this.isTransactionNotInChainYet(transaction, chain)) {
-            console.error('Transaction already in chain!');
+            logger.error('Transaction already in chain!');
             return VerifyErrorCode.ALREADY_IN_CHAIN;
         }
 
         if (!this.areTransactionInputsUnique(transaction)) {
-            console.error('Transaction uses same input more than once.');
+            logger.error('Transaction uses same input more than once.');
             return VerifyErrorCode.DUPLICATE_INPUT;
         }
 
@@ -108,7 +111,7 @@ class TransactionValidator {
             }
 
             if (!inputValidated) {
-                console.error('Could not verify signature');
+                logger.error('Could not verify signature');
                 return false;
             }
         }
@@ -122,12 +125,12 @@ class TransactionValidator {
             let referencedOutputTransaction = this.getTransactionByHash(item.transaction_hash, chain);
 
             if (referencedOutputTransaction === null) {
-                console.error('Output referenced by Input is not in the chain!');
+                logger.error('Output referenced by Input is not in the chain!');
                 return false;
             }
 
             if (!this.isTransactionOutputNotUsedYet(referencedOutputTransaction, item.output_index, chain)) {
-                console.error('Transaction Input and Output amount not equal.');
+                logger.error('Transaction Input and Output amount not equal.');
                 return false;
             }
         }

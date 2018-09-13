@@ -13,92 +13,97 @@ const pull = require('pull-stream');
 const PeerId = require('peer-id');
 const muas_node = require('../muas_node/muas_node');
 
-const logger = require('../logger/logger');
+const logger = require('../logger/logger')
 
 
 class MUAS_Unverified_Pool_Node {
 
-    constructor(io, genesisBlock) {
+    constructor() {
+        this.node = null;
+        this.chain = [];
+        this.pool = [];
+        this.verified_pool = [];
+        this.idSet = new Set();
+        this.idSetVerified = new Set();
+    }
+
+    start_pool_node(io, genesisBlock) {
         let self = this;
+        return new Promise(function (resolve, reject) {
+            muas_node.createNode(io, genesisBlock, function (err, node) {
+                if(err){reject(err)}
+                self.node = node;
+                self.node.handle('/add_unverified_transaction', function (protocol, conn) {
+                    pull(
+                        conn,
+                        pull.collect(function (err, transaction) {
+                            if (err) {
+                                throw err
+                            }
+                            self.add_unverified_transaction(transaction);
+                        })
+                    )
+                });
 
-        muas_node.createNode(io, function (err, node) {
+                self.node.handle('/add_verified_transaction_to_chain', function (protocol, conn) {
+                    pull(
+                        conn,
+                        pull.collect(function (err, transaction) {
+                            if (err) {
+                                throw err;
+                            }
+                            self.add_verified_transaction_to_chain(transaction);
+                        })
+                    )
+                });
 
-            self.node = node;
-            self.chain = [];
-            self.pool = [];
-            self.verified_pool = [];
-            self.idSet = new Set();
-            self.idSetVerified = new Set();
+                self.node.handle('/add_verified_transaction', function (protocol, conn) {
+                    pull(
+                        conn,
+                        pull.collect(function (err, transaction) {
+                            if (err) {
+                                throw err
+                            }
+                            self.add_verified_transaction(transaction);
+                        })
+                    )
+                });
 
-            self.node.handle('/add_unverified_transaction', function (protocol, conn) {
-                pull(
-                    conn,
-                    pull.collect(function (err, transaction) {
-                        if (err) {
-                            throw err
-                        }
-                        self.add_unverified_transaction(transaction);
-                    })
-                )
+                self.node.handle('/delete_unverified_transaction', (protocol, conn) => {
+                    pull(
+                        conn,
+                        pull.collect(function (err, transaction) {
+                            self.delete_unverified_transaction(transaction);
+                        })
+                    )
+                });
+
+                self.node.handle('/delete_verified_transaction', (protocol, conn) => {
+                    pull(
+                        conn,
+                        pull.collect(function (err, transaction) {
+                            self.delete_unverified_transaction(transaction);
+                        })
+                    )
+                });
+
+                self.node.handle('/get_random_transaction', (protocol, conn) => {
+                    pull(
+                        pull.values(JSON.stringify(self.get_random_transaction())),
+                        conn
+                    )
+                });
+
+                self.node.handle('/get_verified_transaction', (protocol, conn) => {
+                    pull(
+                        pull.values(JSON.stringify(self.get_random_transaction())),
+                        conn
+                    )
+                });
+                resolve(node);
             });
+        });
 
-            self.node.handle('/add_verified_transaction_to_chain', function (protocol, conn) {
-                pull(
-                    conn,
-                    pull.collect(function (err, transaction) {
-                        if (err) {
-                            throw err;
-                        }
-                        self.add_verified_transaction_to_chain(transaction);
-                    })
-                )
-            });
-
-            self.node.handle('/add_verified_transaction', function (protocol, conn) {
-                pull(
-                    conn,
-                    pull.collect(function (err, transaction) {
-                        if (err) {
-                            throw err
-                        }
-                        self.add_verified_transaction(transaction);
-                    })
-                )
-            });
-
-            self.node.handle('/delete_unverified_transaction', (protocol, conn) => {
-                pull(
-                    conn,
-                    pull.collect(function (err, transaction) {
-                        self.delete_unverified_transaction(transaction);
-                    })
-                )
-            });
-
-            self.node.handle('/delete_verified_transaction', (protocol, conn) => {
-                pull(
-                    conn,
-                    pull.collect(function (err, transaction) {
-                        self.delete_unverified_transaction(transaction);
-                    })
-                )
-            });
-
-            self.node.handle('/get_random_transaction', (protocol, conn) => {
-                pull(
-                    pull.values(JSON.stringify(self.get_random_transaction())),
-                    conn
-                )
-            });
-
-            self.node.handle('/get_verified_transaction', (protocol, conn) => {
-                pull(
-                    pull.values(JSON.stringify(self.get_random_transaction())),
-                    conn
-                )
-            });
-
-        }, genesisBlock);
     }
 
     print_pool() {
@@ -122,7 +127,6 @@ class MUAS_Unverified_Pool_Node {
     add_unverified_transaction(transaction) {
 
         transaction = JSON.parse(transaction.join(''));
-
         if (this.pool !== null && typeof this.pool !== "undefined" && !this.idSet.has(transaction.transactionHash)) {
             this.pool.push(transaction);
             this.idSet.add(transaction.transactionHash);
