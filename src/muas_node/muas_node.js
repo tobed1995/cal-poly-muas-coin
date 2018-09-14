@@ -49,7 +49,6 @@ class MUASNode extends libp2p {
     }
 
     broadcast_add_unverified_transaction(transaction) {
-        logger.info('adding transaction %s ', transaction);
         let self = this;
         return new Promise(function (resolve, reject) {
             if (transaction !== null && typeof transaction !== 'undefined') {
@@ -123,21 +122,21 @@ class MUASNode extends libp2p {
         });
     }
 
-    broadcast_add_verified_transaction_to_chain(transaction) {
+    broadcast_added_block_to_chain(block) {
         let self = this;
         return new Promise(function (resolve, reject) {
             self.available_peers.forEach((peer) => {
-                self.dialProtocol(peer, '/add_verified_transaction_to_chain', (err, conn) => {
+                self.dialProtocol(peer, '/broadcast_added_block_to_chain', (err, conn) => {
                     if (err) {
                         return
                     }
                     pull(
-                        pull.values([JSON.stringify(transaction)]),
+                        pull.values([JSON.stringify(block)]),
                         conn
                     )
                 });
             });
-            resolve(transaction);
+            resolve(block);
         });
     }
 
@@ -229,11 +228,6 @@ class MUASNode extends libp2p {
             }
         });
     }
-
-    proof_of_work(transaction) {
-        return true;
-    }
-
 }
 
 
@@ -261,6 +255,8 @@ let createNode = function (io, genesisBlock, callback) {
 
                 node.id = peerInfo.id.toB58String();
                 node.chain = [];
+                node.idSetVerified = new Set();
+
                 if (genesisBlock === null || typeof genesisBlock === 'undefined') {
                     console.log("Node " + node.id + " generate genesis");
                     let genesisBlock1 = Block.getGenesisBlock(node.priv_sign_key, node.pub_sign_key);
@@ -288,6 +284,28 @@ let createNode = function (io, genesisBlock, callback) {
                         node.available_peers.set(peer.id.toB58String(), peer);
                     }
                 });
+
+
+                node.handle('/broadcast_added_block_to_chain', function(protocol,conn){
+                    let new_block = null;
+                    pull(
+                        conn,
+                        pull.collect(function(err,block){
+                            new_block = JSON.parse(block.toString());
+                            logger.info('node %s received call to add block %s to its chain', node.id,new_block.blockHash.substring(0,10));
+                            if(new_block !== null && typeof new_block !== 'undefined' && pow.validatePow(new_block) && !node.idSetVerified.has(new_block.transaction[0].transactionHash)){
+                                logger.info('node %s added validated block %s', node.id,new_block.blockHash.substring(0,10));
+                                node.chain.push(new_block);
+                                node.idSetVerified.add(new_block.transaction[0].transactionHash);
+                            }else{
+                                logger.warn('node %s failed to validate block %s', node.id, new_block.blockHash.substring(0,10));
+                            }
+                        })
+                    )
+
+
+                });
+
                 node.start(cb);
                 logger.info('node with id %s started', node.id);
             }

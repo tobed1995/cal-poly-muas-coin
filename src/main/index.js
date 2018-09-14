@@ -66,33 +66,31 @@ create_muas_node(io, null).then(function (n1) {
                         let block_to_append = new Block(transaction,previous_block);
                         new ProofOfWork().proofOfWork(block_to_append);
 
-                        nodes[1].broadcast_add_verified_transaction_to_chain(block_to_append).then(function(){
-
+                        nodes[1].broadcast_added_block_to_chain(block_to_append).then(function(){
+                            nodes[1].broadcast_delete_unverified_transaction(transaction);
                         }).catch(function(err){
-
                         });
 
                     }).catch(function (err) {
-                        logger.error('failed to validate transaction %s with opCode %s', transaction.transactionHash, err);
+                        //TODO: delete transaction from network
+                        nodes[1].broadcast_delete_unverified_transaction(transaction);
+                        logger.error('deleting transaction %s because node %s failed validation. reason %s', transaction.transactionHash,nodes[1].id,err);
                     });
                 }).catch(function (err) {
                     logger.error(err);
                 });
 
+                nodes.forEach((node) => {
+                   logger.info('node ids %s chain length == %s', node.id,node.chain.length);
+                });
+
             }, 2000)
         }).catch(function (err) {
-
         });
-
         setInterval(function () {
-
-        }, 2000)
-
-
+        }, 2000);
     }).catch(function (err) {
-
     });
-
 }).catch(function (err) {
     logger.error(err);
 });

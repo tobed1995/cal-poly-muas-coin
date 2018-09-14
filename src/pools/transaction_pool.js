@@ -24,7 +24,6 @@ class MUAS_Unverified_Pool_Node {
         this.pool = [];
         this.verified_pool = [];
         this.idSet = new Set();
-        this.idSetVerified = new Set();
     }
 
     start_pool_node(io, genesisBlock) {
@@ -141,7 +140,6 @@ class MUAS_Unverified_Pool_Node {
 
     // TODO need to be implemented w/o stub!!!!
     add_verified_transaction_to_chain(block) {
-
         block = JSON.parse(block.toString());
         if (this.chain !== null && typeof this.chain !== 'undefined' && !this.idSetVerified.has(block.transaction[0].transactionHash)) {
             //check validity of chain --> resolve branches && broadcast if added to my own chain.
@@ -155,9 +153,6 @@ class MUAS_Unverified_Pool_Node {
             }else{
                 logger.warn('block %s is not valid. not adding to chain', block.blockHash);
             }
-
-
-
             logger.info('node id %s added block: %s to chain', this.node.id, block.transaction[0].transactionHash);
         }else{
             logger.info('node id %s refused to add block %s to chain', this.node.id, block.transaction[0].transactionHash);
