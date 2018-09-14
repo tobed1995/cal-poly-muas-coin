@@ -2,6 +2,8 @@
 
 const x11 = require('x11-hash-js');
 const Block = require('./block');
+const logger = require('../logger/logger')
+
 
 class ProofOfWork {
 
@@ -10,18 +12,20 @@ class ProofOfWork {
     }
 
     proofOfWork(block) {
+        logger.info('starting to mine block with transactionHash %s',block.transaction[0].transactionHash);
         //not implemented because the showcase would take too much time
         //let targetValue = '00000FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF';
 
         //takes up to 5 - 30 seconds 
-        let targetValue = '000FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF';
+        let targetValue = '0000FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF';
         return this.doPow(block, targetValue);
     }
 
     doPow(block, targetValue) {
         let t0 = new Date();
-
+        let counter = 0;
         while (true) {
+            counter++;
             let x11Hash = this.calculateX11Hash(JSON.stringify(block.transaction) + block.previousHash + block.nonce);
             // console.log("x11Hash: " + x11Hash + "; targetValue: " + targetValue + "; true? " + (x11Hash < targetValue));
             if (x11Hash < targetValue) {
@@ -31,7 +35,12 @@ class ProofOfWork {
                 block.blockHash = x11Hash;
                 return block;
             }
-            block.nonce = block.nonce + 1;
+            block.nonce = Math.floor(Math.random()* Number.MAX_SAFE_INTEGER);
+            if(counter % 10000 == 0){
+                logger.info('another 10000 iterations done without any result ... need more GPUS in my botnet o_O');
+                counter = 0;
+            }
+
         }
     }
 

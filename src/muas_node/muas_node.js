@@ -258,13 +258,12 @@ let createNode = function (io, genesisBlock, callback) {
                 node.idSetVerified = new Set();
 
                 if (genesisBlock === null || typeof genesisBlock === 'undefined') {
-                    console.log("Node " + node.id + " generate genesis");
+                    logger.info("node id %s generated genesis",node.id);
                     let genesisBlock1 = Block.getGenesisBlock(node.priv_sign_key, node.pub_sign_key);
                     let pow = new ProofOfWork();
-                    let targetValue = '0FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF';
 
                     do {
-                        pow.doPow(genesisBlock1, targetValue);
+                        pow.proofOfWork(genesisBlock1);
                     } while (!pow.validatePow(genesisBlock1));
 
                     node.chain.push(genesisBlock1);

@@ -29,6 +29,9 @@ const create_muas_node = util.promisify(muas_node.createNode);
 
 let nodes = [];
 
+const run_normal_flaw = true;
+
+if (run_normal_flaw) {
 
 create_muas_node(io, null).then(function (n1) {
     nodes.push(n1);
@@ -53,46 +56,53 @@ create_muas_node(io, null).then(function (n1) {
     transaction.sign(n1.priv_sign_key);
     transaction.createTransactionHash();
 
+        Promise.all([pool, n2, n3, n4, n5]).then(function (nodes) {
 
-    Promise.all([pool, n2, n3, n4, n5]).then(function (nodes) {
+            n1.broadcast_add_unverified_transaction(transaction).then(function (transaction) {
+                setInterval(function () {
+                    nodes[1].broadcast_get_random_transaction().then(function (transaction) {
+                        nodes[1].verify_transaction(transaction, nodes[1].chain).then(function () {
 
+                            let previous_block = nodes[1].chain[nodes[1].chain.length - 1].transactionHash;
+                            let block_to_append = new Block(transaction, previous_block);
+                            new ProofOfWork().proofOfWork(block_to_append);
 
-        n1.broadcast_add_unverified_transaction(transaction).then(function (transaction) {
-            setInterval(function () {
-                nodes[1].broadcast_get_random_transaction().then(function (transaction) {
-                    nodes[1].verify_transaction(transaction, nodes[1].chain).then(function () {
+                            nodes[1].broadcast_added_block_to_chain(block_to_append).then(function () {
+                                nodes[1].broadcast_delete_unverified_transaction(transaction);
+                            }).catch(function (err) {
+                            });
 
-                        let previous_block = nodes[1].chain[nodes[1].chain.length-1].transactionHash;
-                        let block_to_append = new Block(transaction,previous_block);
-                        new ProofOfWork().proofOfWork(block_to_append);
-
-                        nodes[1].broadcast_added_block_to_chain(block_to_append).then(function(){
+                        }).catch(function (err) {
+                            //TODO: delete transaction from network
                             nodes[1].broadcast_delete_unverified_transaction(transaction);
-                        }).catch(function(err){
+                            logger.error('deleting transaction %s because node %s failed validation. reason %s', transaction.transactionHash, nodes[1].id, err);
                         });
-
                     }).catch(function (err) {
-                        //TODO: delete transaction from network
-                        nodes[1].broadcast_delete_unverified_transaction(transaction);
-                        logger.error('deleting transaction %s because node %s failed validation. reason %s', transaction.transactionHash,nodes[1].id,err);
+                        logger.error(err);
                     });
-                }).catch(function (err) {
-                    logger.error(err);
-                });
-
-                nodes.forEach((node) => {
-                   logger.info('node ids %s chain length == %s', node.id,node.chain.length);
-                });
-
-            }, 2000)
+                }, 2000)
+            }).catch(function (err) {
+                logger.error(err);
+            });
+            setInterval(function () {
+            }, 2000);
         }).catch(function (err) {
+            logger.error(err);
         });
-        setInterval(function () {
-        }, 2000);
-    }).catch(function (err) {
-    });
+
+
 }).catch(function (err) {
     logger.error(err);
 });
+
+} else {
+    let block = null;
+    setInterval(function () {
+        create_muas_node(io, block).then(function (n) {
+            block = n.chain[0];
+        })
+    }, 5000);
+
+}
 
 
